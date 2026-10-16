@@ -1,4 +1,7 @@
 package com.machry.machryapi.repository;
 
-public interface IngredienteFichaRepository {
+import com.machry.machryapi.model.IngredienteFicha;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface IngredienteFichaRepository extends JpaRepository<IngredienteFicha, Long> {
 }

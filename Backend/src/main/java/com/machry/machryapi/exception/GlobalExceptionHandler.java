@@ -22,6 +22,13 @@ public class GlobalExceptionHandler {
         return notFound(exception.getMessage());
     }
 
+    @ExceptionHandler(FichaTecnicaNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleFichaTecnicaNotFound(
+            FichaTecnicaNotFoundException exception
+    ) {
+        return notFound(exception.getMessage());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException exception) {
         Map<String, String> fields = new LinkedHashMap<>();
