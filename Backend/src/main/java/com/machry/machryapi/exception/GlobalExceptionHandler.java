@@ -14,12 +14,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ItemNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleItemNotFound(ItemNotFoundException exception) {
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("status", HttpStatus.NOT_FOUND.value());
-        body.put("error", "Not Found");
-        body.put("message", exception.getMessage());
+        return notFound(exception.getMessage());
+    }
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    @ExceptionHandler(LoteNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleLoteNotFound(LoteNotFoundException exception) {
+        return notFound(exception.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -36,5 +36,24 @@ public class GlobalExceptionHandler {
         body.put("fields", fields);
 
         return ResponseEntity.badRequest().body(body);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException exception) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("error", "Bad Request");
+        body.put("message", exception.getMessage());
+
+        return ResponseEntity.badRequest().body(body);
+    }
+
+    private ResponseEntity<Map<String, Object>> notFound(String message) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("status", HttpStatus.NOT_FOUND.value());
+        body.put("error", "Not Found");
+        body.put("message", message);
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
     }
 }
