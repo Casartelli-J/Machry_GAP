@@ -1,4 +1,7 @@
 package com.machry.machryapi.repository;
 
-public interface ItemRepository {
+import com.machry.machryapi.model.Item;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface ItemRepository extends JpaRepository<Item, Long> {
 }
