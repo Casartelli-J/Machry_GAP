@@ -1,5 +1,6 @@
 package com.machry.machryapi.service;
 
+import com.machry.machryapi.exception.BusinessRuleException;
 import com.machry.machryapi.dto.etapa.EtapaProcessamentoRequestDTO;
 import com.machry.machryapi.dto.processamento.ItemProcessamentoRequestDTO;
 import com.machry.machryapi.dto.processamento.ProcessamentoRequestDTO;
@@ -146,14 +147,14 @@ public class ProcessamentoService {
                 .stream()
                 .filter(etapa -> etapa.getId().equals(etapaId))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException(
+                .orElseThrow(() -> new BusinessRuleException(
                         "A etapa " + etapaId + " não pertence à ficha técnica informada"
                 ));
     }
 
     private void validateProduto(Item produto) {
         if (produto.getTipo() == TipoItem.INSUMO) {
-            throw new IllegalArgumentException(
+            throw new BusinessRuleException(
                     "Um item do tipo INSUMO não pode ser produto de um processamento"
             );
         }
@@ -161,7 +162,7 @@ public class ProcessamentoService {
 
     private void validateFichaPertenceAoProduto(FichaTecnica fichaTecnica, Item produto) {
         if (!fichaTecnica.getProduto().getId().equals(produto.getId())) {
-            throw new IllegalArgumentException(
+            throw new BusinessRuleException(
                     "A ficha técnica informada não pertence ao produto do processamento"
             );
         }
@@ -175,7 +176,7 @@ public class ProcessamentoService {
 
         for (EtapaProcessamentoRequestDTO etapa : etapasRealizadas) {
             if (!etapasInformadas.add(etapa.etapaFichaTecnicaId())) {
-                throw new IllegalArgumentException(
+                throw new BusinessRuleException(
                         "A mesma etapa da ficha técnica não pode ser registrada duas vezes no processamento"
                 );
             }

@@ -1,5 +1,6 @@
 package com.machry.machryapi.service;
 
+import com.machry.machryapi.exception.BusinessRuleException;
 import com.machry.machryapi.dto.lote.LoteRequestDTO;
 import com.machry.machryapi.dto.lote.LoteResponseDTO;
 import com.machry.machryapi.exception.ItemNotFoundException;
@@ -79,7 +80,7 @@ public class LoteService {
 
     private void validateDates(LoteRequestDTO request) {
         if (request.dataValidade().isBefore(request.dataProducao())) {
-            throw new IllegalArgumentException(
+            throw new BusinessRuleException(
                     "A data de validade não pode ser anterior à data de produção"
             );
         }

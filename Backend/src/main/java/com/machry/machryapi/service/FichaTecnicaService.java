@@ -1,5 +1,6 @@
 package com.machry.machryapi.service;
 
+import com.machry.machryapi.exception.BusinessRuleException;
 import com.machry.machryapi.dto.etapa.EtapaFichaTecnicaRequestDTO;
 import com.machry.machryapi.dto.fichatecnica.FichaTecnicaRequestDTO;
 import com.machry.machryapi.dto.fichatecnica.FichaTecnicaResponseDTO;
@@ -117,7 +118,7 @@ public class FichaTecnicaService {
 
     private void validateProduto(Item produto) {
         if (produto.getTipo() == TipoItem.INSUMO) {
-            throw new IllegalArgumentException(
+            throw new BusinessRuleException(
                     "Um item do tipo INSUMO não pode possuir ficha técnica"
             );
         }
@@ -129,7 +130,7 @@ public class FichaTecnicaService {
                 : fichaTecnicaRepository.existsByProduto_IdAndIdNot(produtoId, fichaIdAtual);
 
         if (possuiOutraFicha) {
-            throw new IllegalArgumentException(
+            throw new BusinessRuleException(
                     "O produto já possui uma ficha técnica cadastrada"
             );
         }
@@ -141,7 +142,7 @@ public class FichaTecnicaService {
                 .anyMatch(ingrediente -> ingrediente.itemId().equals(produto.getId()));
 
         if (produtoUsadoComoIngrediente) {
-            throw new IllegalArgumentException(
+            throw new BusinessRuleException(
                     "O produto não pode ser ingrediente da própria ficha técnica"
             );
         }
@@ -152,7 +153,7 @@ public class FichaTecnicaService {
 
         for (EtapaFichaTecnicaRequestDTO etapa : etapas) {
             if (!ordens.add(etapa.ordem())) {
-                throw new IllegalArgumentException(
+                throw new BusinessRuleException(
                         "Não pode haver duas etapas com a mesma ordem na ficha técnica"
                 );
             }
