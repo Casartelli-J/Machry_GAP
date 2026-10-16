@@ -35,20 +35,20 @@ public class ProcessamentoController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProcessamentoResponseDTO> getById(@PathVariable Long id) {
+    public ResponseEntity<ProcessamentoResponseDTO> getById(@PathVariable("id") Long id) {
         return ResponseEntity.ok(service.getById(id));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ProcessamentoResponseDTO> update(
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @Valid @RequestBody ProcessamentoRequestDTO request
     ) {
         return ResponseEntity.ok(service.update(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable("id") Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }

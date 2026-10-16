@@ -35,20 +35,20 @@ public class FichaTecnicaController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<FichaTecnicaResponseDTO> getById(@PathVariable Long id) {
+    public ResponseEntity<FichaTecnicaResponseDTO> getById(@PathVariable("id") Long id) {
         return ResponseEntity.ok(service.getById(id));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<FichaTecnicaResponseDTO> update(
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @Valid @RequestBody FichaTecnicaRequestDTO request
     ) {
         return ResponseEntity.ok(service.update(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable("id") Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }

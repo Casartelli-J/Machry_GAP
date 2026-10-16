@@ -33,20 +33,20 @@ public class LoteController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<LoteResponseDTO> getById(@PathVariable Long id) {
+    public ResponseEntity<LoteResponseDTO> getById(@PathVariable("id") Long id) {
         return ResponseEntity.ok(service.getById(id));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<LoteResponseDTO> update(
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @Valid @RequestBody LoteRequestDTO request
     ) {
         return ResponseEntity.ok(service.update(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable("id") Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
