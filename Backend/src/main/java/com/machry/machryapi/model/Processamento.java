@@ -37,6 +37,14 @@ public class Processamento {
     )
     private List<ItemProcessamento> itensUtilizados = new ArrayList<>();
 
+    @OneToMany(
+            mappedBy = "processamento",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @OrderBy("ordem ASC")
+    private List<EtapaProcessamento> etapasRealizadas = new ArrayList<>();
+
     public Processamento() {
     }
 
@@ -70,6 +78,16 @@ public class Processamento {
     public void addItemUtilizado(ItemProcessamento itemProcessamento) {
         itemProcessamento.setProcessamento(this);
         this.itensUtilizados.add(itemProcessamento);
+    }
+
+    public void replaceEtapasRealizadas(List<EtapaProcessamento> novasEtapas) {
+        this.etapasRealizadas.clear();
+        novasEtapas.forEach(this::addEtapaRealizada);
+    }
+
+    public void addEtapaRealizada(EtapaProcessamento etapaProcessamento) {
+        etapaProcessamento.setProcessamento(this);
+        this.etapasRealizadas.add(etapaProcessamento);
     }
 
     public Long getId() {
@@ -110,5 +128,9 @@ public class Processamento {
 
     public List<ItemProcessamento> getItensUtilizados() {
         return itensUtilizados;
+    }
+
+    public List<EtapaProcessamento> getEtapasRealizadas() {
+        return etapasRealizadas;
     }
 }

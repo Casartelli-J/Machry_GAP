@@ -1,5 +1,6 @@
 package com.machry.machryapi.dto.processamento;
 
+import com.machry.machryapi.dto.etapa.EtapaProcessamentoResponseDTO;
 import com.machry.machryapi.model.Processamento;
 
 import java.math.BigDecimal;
@@ -13,7 +14,8 @@ public record ProcessamentoResponseDTO(
         Long fichaTecnicaId,
         BigDecimal quantidadeProduzida,
         LocalDate dataProcessamento,
-        List<ItemProcessamentoResponseDTO> itensUtilizados
+        List<ItemProcessamentoResponseDTO> itensUtilizados,
+        List<EtapaProcessamentoResponseDTO> etapasRealizadas
 ) {
     public ProcessamentoResponseDTO(Processamento processamento) {
         this(
@@ -26,6 +28,10 @@ public record ProcessamentoResponseDTO(
                 processamento.getItensUtilizados()
                         .stream()
                         .map(ItemProcessamentoResponseDTO::new)
+                        .toList(),
+                processamento.getEtapasRealizadas()
+                        .stream()
+                        .map(EtapaProcessamentoResponseDTO::new)
                         .toList()
         );
     }

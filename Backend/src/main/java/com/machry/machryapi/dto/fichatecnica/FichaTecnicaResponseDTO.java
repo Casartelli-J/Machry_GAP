@@ -1,5 +1,6 @@
 package com.machry.machryapi.dto.fichatecnica;
 
+import com.machry.machryapi.dto.etapa.EtapaFichaTecnicaResponseDTO;
 import com.machry.machryapi.model.FichaTecnica;
 
 import java.math.BigDecimal;
@@ -11,7 +12,8 @@ public record FichaTecnicaResponseDTO(
         String produtoNome,
         BigDecimal rendimento,
         String unidadeRendimento,
-        List<IngredienteFichaResponseDTO> ingredientes
+        List<IngredienteFichaResponseDTO> ingredientes,
+        List<EtapaFichaTecnicaResponseDTO> etapas
 ) {
     public FichaTecnicaResponseDTO(FichaTecnica fichaTecnica) {
         this(
@@ -23,6 +25,10 @@ public record FichaTecnicaResponseDTO(
                 fichaTecnica.getIngredientes()
                         .stream()
                         .map(IngredienteFichaResponseDTO::new)
+                        .toList(),
+                fichaTecnica.getEtapas()
+                        .stream()
+                        .map(EtapaFichaTecnicaResponseDTO::new)
                         .toList()
         );
     }

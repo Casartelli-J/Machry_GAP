@@ -1,10 +1,12 @@
 package com.machry.machryapi.service;
 
+import com.machry.machryapi.dto.etapa.EtapaFichaTecnicaRequestDTO;
 import com.machry.machryapi.dto.fichatecnica.FichaTecnicaRequestDTO;
 import com.machry.machryapi.dto.fichatecnica.FichaTecnicaResponseDTO;
 import com.machry.machryapi.dto.fichatecnica.IngredienteFichaRequestDTO;
 import com.machry.machryapi.exception.FichaTecnicaNotFoundException;
 import com.machry.machryapi.exception.ItemNotFoundException;
+import com.machry.machryapi.model.EtapaFichaTecnica;
 import com.machry.machryapi.model.FichaTecnica;
 import com.machry.machryapi.model.IngredienteFicha;
 import com.machry.machryapi.model.Item;
@@ -14,7 +16,9 @@ import com.machry.machryapi.repository.ItemRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class FichaTecnicaService {
@@ -37,9 +41,11 @@ public class FichaTecnicaService {
         validateProduto(produto);
         validateProdutoSemOutraFicha(produto.getId(), null);
         validateIngredientes(request, produto);
+        validateEtapas(request.etapas());
 
         FichaTecnica fichaTecnica = new FichaTecnica(request, produto);
         fichaTecnica.replaceIngredientes(buildIngredientes(request.ingredientes()));
+        fichaTecnica.replaceEtapas(buildEtapas(request.etapas()));
 
         FichaTecnica savedFicha = fichaTecnicaRepository.save(fichaTecnica);
         return new FichaTecnicaResponseDTO(savedFicha);
@@ -66,9 +72,11 @@ public class FichaTecnicaService {
         validateProduto(produto);
         validateProdutoSemOutraFicha(produto.getId(), id);
         validateIngredientes(request, produto);
+        validateEtapas(request.etapas());
 
         fichaTecnica.update(request, produto);
         fichaTecnica.replaceIngredientes(buildIngredientes(request.ingredientes()));
+        fichaTecnica.replaceEtapas(buildEtapas(request.etapas()));
 
         FichaTecnica updatedFicha = fichaTecnicaRepository.save(fichaTecnica);
         return new FichaTecnicaResponseDTO(updatedFicha);
@@ -101,6 +109,12 @@ public class FichaTecnicaService {
                 .toList();
     }
 
+    private List<EtapaFichaTecnica> buildEtapas(List<EtapaFichaTecnicaRequestDTO> etapas) {
+        return etapas.stream()
+                .map(EtapaFichaTecnica::new)
+                .toList();
+    }
+
     private void validateProduto(Item produto) {
         if (produto.getTipo() == TipoItem.INSUMO) {
             throw new IllegalArgumentException(
@@ -130,6 +144,18 @@ public class FichaTecnicaService {
             throw new IllegalArgumentException(
                     "O produto não pode ser ingrediente da própria ficha técnica"
             );
+        }
+    }
+
+    private void validateEtapas(List<EtapaFichaTecnicaRequestDTO> etapas) {
+        Set<Integer> ordens = new HashSet<>();
+
+        for (EtapaFichaTecnicaRequestDTO etapa : etapas) {
+            if (!ordens.add(etapa.ordem())) {
+                throw new IllegalArgumentException(
+                        "Não pode haver duas etapas com a mesma ordem na ficha técnica"
+                );
+            }
         }
     }
 }

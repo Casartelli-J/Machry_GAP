@@ -1,5 +1,6 @@
 package com.machry.machryapi.dto.processamento;
 
+import com.machry.machryapi.dto.etapa.EtapaProcessamentoRequestDTO;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -24,6 +25,9 @@ public record ProcessamentoRequestDTO(
         LocalDate dataProcessamento,
 
         @NotEmpty(message = "O processamento deve possuir pelo menos um item utilizado")
-        List<@Valid ItemProcessamentoRequestDTO> itensUtilizados
+        List<@Valid ItemProcessamentoRequestDTO> itensUtilizados,
+
+        @NotEmpty(message = "O processamento deve possuir pelo menos uma etapa realizada")
+        List<@Valid EtapaProcessamentoRequestDTO> etapasRealizadas
 ) {
 }

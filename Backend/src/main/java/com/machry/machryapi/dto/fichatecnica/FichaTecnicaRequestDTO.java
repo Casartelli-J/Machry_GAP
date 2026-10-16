@@ -1,5 +1,6 @@
 package com.machry.machryapi.dto.fichatecnica;
 
+import com.machry.machryapi.dto.etapa.EtapaFichaTecnicaRequestDTO;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -21,6 +22,9 @@ public record FichaTecnicaRequestDTO(
         String unidadeRendimento,
 
         @NotEmpty(message = "A ficha técnica deve possuir pelo menos um ingrediente")
-        List<@Valid IngredienteFichaRequestDTO> ingredientes
+        List<@Valid IngredienteFichaRequestDTO> ingredientes,
+
+        @NotEmpty(message = "A ficha técnica deve possuir pelo menos uma etapa")
+        List<@Valid EtapaFichaTecnicaRequestDTO> etapas
 ) {
 }

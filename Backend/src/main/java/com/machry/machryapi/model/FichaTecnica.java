@@ -32,6 +32,14 @@ public class FichaTecnica {
     )
     private List<IngredienteFicha> ingredientes = new ArrayList<>();
 
+    @OneToMany(
+            mappedBy = "fichaTecnica",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @OrderBy("ordem ASC")
+    private List<EtapaFichaTecnica> etapas = new ArrayList<>();
+
     public FichaTecnica() {
     }
 
@@ -55,6 +63,16 @@ public class FichaTecnica {
     public void addIngrediente(IngredienteFicha ingrediente) {
         ingrediente.setFichaTecnica(this);
         this.ingredientes.add(ingrediente);
+    }
+
+    public void replaceEtapas(List<EtapaFichaTecnica> novasEtapas) {
+        this.etapas.clear();
+        novasEtapas.forEach(this::addEtapa);
+    }
+
+    public void addEtapa(EtapaFichaTecnica etapa) {
+        etapa.setFichaTecnica(this);
+        this.etapas.add(etapa);
     }
 
     public Long getId() {
@@ -87,5 +105,9 @@ public class FichaTecnica {
 
     public List<IngredienteFicha> getIngredientes() {
         return ingredientes;
+    }
+
+    public List<EtapaFichaTecnica> getEtapas() {
+        return etapas;
     }
 }
