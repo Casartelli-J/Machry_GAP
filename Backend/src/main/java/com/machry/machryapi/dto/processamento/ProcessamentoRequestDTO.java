@@ -1,4 +1,4 @@
 package com.machry.machryapi.dto.processamento;
 
-public class ProcessamentoRequestDTO {
+public record ProcessamentoRequestDTO() {
 }

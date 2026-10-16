@@ -1,4 +1,4 @@
 package com.machry.machryapi.repository;
 
-public class ItemProcessamentoRepository {
+public interface ItemProcessamentoRepository {
 }

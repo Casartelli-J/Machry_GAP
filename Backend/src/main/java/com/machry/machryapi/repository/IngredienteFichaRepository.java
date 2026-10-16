@@ -1,4 +1,4 @@
 package com.machry.machryapi.repository;
 
-public class IngredienteFichaRepository {
+public interface IngredienteFichaRepository {
 }
