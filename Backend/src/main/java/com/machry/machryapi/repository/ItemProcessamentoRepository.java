@@ -1,4 +1,7 @@
 package com.machry.machryapi.repository;
 
-public interface ItemProcessamentoRepository {
+import com.machry.machryapi.model.ItemProcessamento;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface ItemProcessamentoRepository extends JpaRepository<ItemProcessamento, Long> {
 }

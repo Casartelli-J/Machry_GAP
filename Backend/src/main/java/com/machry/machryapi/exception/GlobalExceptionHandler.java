@@ -29,6 +29,13 @@ public class GlobalExceptionHandler {
         return notFound(exception.getMessage());
     }
 
+    @ExceptionHandler(ProcessamentoNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleProcessamentoNotFound(
+            ProcessamentoNotFoundException exception
+    ) {
+        return notFound(exception.getMessage());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException exception) {
         Map<String, String> fields = new LinkedHashMap<>();
