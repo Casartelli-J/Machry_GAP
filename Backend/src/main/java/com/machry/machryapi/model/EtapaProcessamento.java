@@ -16,11 +16,6 @@ public class EtapaProcessamento {
     @JoinColumn(name = "processamento_id", nullable = false)
     private Processamento processamento;
 
-    /*
-     * ID da etapa planejada que originou este registro.
-     * Não é uma FK propositalmente: o processamento mantém um snapshot histórico
-     * mesmo que a ficha técnica seja alterada posteriormente.
-     */
     @Column(nullable = false)
     private Long etapaFichaTecnicaIdOrigem;
 

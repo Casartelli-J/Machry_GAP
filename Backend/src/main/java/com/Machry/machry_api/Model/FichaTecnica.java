@@ -18,12 +18,8 @@ public class FichaTecnica {
 
     @Enumerated(EnumType.STRING)
     private TipoMetodo method;
-
-    // Relacionamento 1:N com a tabela de composição/ingredientes
     @OneToMany(mappedBy = "fichaTecnica", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Composicao> ingredientes = new ArrayList<>();
-
-    // --- GETTERS E SETTERS ---
     public Integer getIdFicha() { return idFicha; }
     public void setIdFicha(Integer idFicha) { this.idFicha = idFicha; }
 

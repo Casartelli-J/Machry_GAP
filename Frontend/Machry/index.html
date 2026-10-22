@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jomolhari&display=swap" rel="stylesheet">
+  <title>MACHRY | Operação interna</title>
+  <link rel="stylesheet" href="style.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.577.0/dist/umd/lucide.min.js" type="text/javascript"></script>
+ </head>
+ <body data-template-id="__page-root" style="background: rgb(245, 248, 251);">
+  <div class="app-shell">
+   <aside id="sidebar" class="sidebar" aria-label="Navegação interna">
+    <div class="brand">
+     <span data-template-id="brand-name" class="canva-text brand-name" style="color: rgb(255, 255, 255); font-weight: 800; font-style: normal; font-size: 14px;">MACHRY</span>
+    </div>
+    <nav aria-label="Áreas internas">
+     <p data-template-id="nav-caption" class="canva-text nav-caption" style="color: rgb(121, 145, 168); font-weight: 800; font-style: normal; font-size: 14px;">OPERAÇÃO INTERNA</p><button type="button" class="nav-item active" data-view="home" aria-current="page"><i data-lucide="layout-dashboard" aria-hidden="true"></i><span data-template-id="nav-home" class="canva-text" style="color: rgb(255, 255, 255); font-weight: 400; font-style: normal; font-size: 14px;">Visão geral</span></button> <button type="button" class="nav-item" data-view="orders"><i data-lucide="clipboard-list" aria-hidden="true"></i><span data-template-id="nav-orders" class="canva-text" style="color: rgb(202, 215, 228); font-weight: 400; font-style: normal; font-size: 14px;">Pedidos</span></button> <button type="button" class="nav-item" data-view="recipes"><i data-lucide="book-open" aria-hidden="true"></i><span data-template-id="nav-recipes" class="canva-text" style="color: rgb(202, 215, 228); font-weight: 400; font-style: normal; font-size: 14px;">Receitas</span></button> <button type="button" class="nav-item" data-view="stock"><i data-lucide="boxes" aria-hidden="true"></i><span data-template-id="nav-stock" class="canva-text" style="color: rgb(202, 215, 228); font-weight: 400; font-style: normal; font-size: 14px;">Estoque</span></button> <button type="button" class="nav-item" data-view="purchases"><i data-lucide="shopping-basket" aria-hidden="true"></i><span data-template-id="nav-purchases" class="canva-text" style="color: rgb(202, 215, 228); font-weight: 400; font-style: normal; font-size: 14px;">Compras</span></button> <button type="button" class="nav-item" data-view="sales"><i data-lucide="receipt" aria-hidden="true"></i><span data-template-id="nav-sales" class="canva-text" style="color: rgb(202, 215, 228); font-weight: 400; font-style: normal; font-size: 14px;">Vendas</span></button> <button type="button" class="nav-item" data-view="finance"><i data-lucide="wallet" aria-hidden="true"></i><span data-template-id="nav-finance" class="canva-text" style="color: rgb(202, 215, 228); font-weight: 400; font-style: normal; font-size: 14px;">Financeiro</span></button> <button type="button" class="nav-item" data-view="reports"><i data-lucide="chart-no-axes-combined" aria-hidden="true"></i><span data-template-id="nav-reports" class="canva-text" style="color: rgb(202, 215, 228); font-weight: 400; font-style: normal; font-size: 14px;">Relatórios</span></button> <button type="button" class="nav-item" data-view="team"><i data-lucide="users" aria-hidden="true"></i><span data-template-id="nav-team" class="canva-text" style="color: rgb(202, 215, 228); font-weight: 400; font-style: normal; font-size: 14px;">Equipe</span></button>
+     <button type="button" class="nav-item" data-view="api"><i data-lucide="database" aria-hidden="true"></i><span class="canva-text">Cadastros API</span></button>
+    </nav>
+    <p data-template-id="sidebar-foot" class="canva-text sidebar-foot" style="color: rgb(139, 163, 185); font-weight: 400; font-style: normal; font-size: 14px;"></p>
+   </aside>
+   <div class="workspace">
+    <header class="topbar"><button id="menuToggle" class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false"><i data-lucide="menu" aria-hidden="true"></i></button>
+     <div class="search-wrap"><i data-lucide="search" aria-hidden="true"></i> <label for="orderSearch" class="sr-only"></label> <input id="orderSearch" data-template-id="search-input" class="canva-input" type="search" placeholder="Buscar pedido, mesa ou prato..." autocomplete="off" style="font-weight: 400; font-style: normal; font-size: 14px;">
+     </div>
+     <div class="staff">
+      <span class="avatar" aria-hidden="true">CZ</span>
+      <div class="staff-info">
+       <strong data-template-id="staff-name" class="canva-text" style="color: rgb(20, 43, 64); font-weight: 700; font-style: normal; font-size: 14px;">Equipe de cozinha</strong><small data-template-id="staff-role" class="canva-text" style="color: rgb(135, 151, 166); font-weight: 400; font-style: normal; font-size: 14px;">Área interna · MACHRY</small>
+      </div>
+     </div>
+    </header>
+    <main class="content">
+     <section id="homeView" aria-labelledby="homeTitle">
+      <div class="hero">
+       <p data-template-id="home-eyebrow" class="canva-text eyebrow" style="color: rgb(99, 129, 154); font-weight: 800; font-style: normal; font-size: 14px;">COZINHA / TURNO ATUAL</p>
+       <h1 id="homeTitle" data-template-id="home-title" class="canva-text" style="color: rgb(20, 43, 64); font-weight: 800; font-style: normal; font-size: 28px;">A operação em movimento.</h1>
+       <p data-template-id="home-description" class="canva-text intro" style="color: rgb(112, 131, 151); font-weight: 400; font-style: normal; font-size: 14px;">Pedidos, receitas e informações da operação em um só lugar.</p><span data-template-id="sample-note-home" class="canva-tag sample-note" style="background: rgb(255, 247, 216); color: rgb(122, 89, 0); font-weight: 400; font-style: normal; font-size: 14px;">Dados de exemplo · alterações desta sessão</span>
+      </div>
+      <h2 data-template-id="overview-title" class="canva-text section-heading" style="color: rgb(20, 43, 64); font-weight: 800; font-style: normal; font-size: 21px;">Visão geral do turno</h2>
+      <div class="metrics">
+       <article data-template-id="metric-waiting" class="canva-card card metric" style="background: rgb(255, 255, 255);">
+        <div class="metric-top">
+         <span data-template-id="waiting-label" class="canva-text metric-label" style="color: rgb(102, 123, 141); font-weight: 700; font-style: normal; font-size: 14px;">Aguardando preparo</span><span class="metric-icon gold"><i data-lucide="clock-3" aria-hidden="true"></i></span>
+        </div><strong id="waitingCount" class="metric-value" aria-live="polite">0</strong><span data-template-id="waiting-note" class="canva-text metric-note" style="color: rgb(147, 160, 173); font-weight: 400; font-style: normal; font-size: 14px;">Pedidos na fila</span>
+       </article>
+       <article data-template-id="metric-preparing" class="canva-card card metric" style="background: rgb(255, 255, 255);">
+        <div class="metric-top">
+         <span data-template-id="preparing-label" class="canva-text metric-label" style="color: rgb(102, 123, 141); font-weight: 700; font-style: normal; font-size: 14px;">Em preparo</span><span class="metric-icon blue"><i data-lucide="cooking-pot" aria-hidden="true"></i></span>
+        </div><strong id="preparingCount" class="metric-value" aria-live="polite">0</strong><span data-template-id="preparing-note" class="canva-text metric-note" style="color: rgb(147, 160, 173); font-weight: 400; font-style: normal; font-size: 14px;">Pedidos na bancada</span>
+       </article>
+       <article data-template-id="metric-ready" class="canva-card card metric" style="background: rgb(255, 255, 255);">
+        <div class="metric-top">
+         <span data-template-id="ready-label" class="canva-text metric-label" style="color: rgb(102, 123, 141); font-weight: 700; font-style: normal; font-size: 14px;">Prontos</span><span class="metric-icon green"><i data-lucide="check-check" aria-hidden="true"></i></span>
+        </div><strong id="readyCount" class="metric-value" aria-live="polite">0</strong><span data-template-id="ready-note" class="canva-text metric-note" style="color: rgb(147, 160, 173); font-weight: 400; font-style: normal; font-size: 14px;">Aguardando retirada</span>
+       </article>
+      </div>
+      <div class="dashboard-grid">
+       <section id="ordersPanel" data-template-id="orders-panel" class="canva-panel card panel" aria-labelledby="ordersHeading" style="background: rgb(255, 255, 255);">
+        <div class="panel-head">
+         <h2 id="ordersHeading" data-template-id="orders-heading" class="canva-text" style="color: rgb(20, 43, 64); font-weight: 800; font-style: normal; font-size: 21px;">Quadro de pedidos</h2><button type="button" data-view="orders" data-template-id="all-orders-link" class="canva-link text-link" style="color: rgb(25, 117, 189); font-weight: 800; font-style: normal; font-size: 14px;">Ver quadro →</button>
+        </div>
+        <div id="orderList" class="orders-list">
+         <article class="order-card" data-stage="waiting" data-search="184 mesa 04 risoto de cogumelos">
+          <div>
+           <div class="order-top">
+            <span data-template-id="order-1-id" class="canva-text order-id" style="color: rgb(36, 104, 157); font-weight: 800; font-style: normal; font-size: 14px;">#184</span><span data-template-id="order-1-table" class="canva-text order-table" style="color: rgb(125, 144, 162); font-weight: 400; font-style: normal; font-size: 14px;">Mesa 04</span>
+           </div><strong data-template-id="order-1-dish" class="canva-text order-dish" style="color: rgb(38, 60, 80); font-weight: 800; font-style: normal; font-size: 14px;">Risoto de cogumelos</strong>
+           <p data-template-id="order-1-detail" class="canva-text order-detail" style="color: rgb(129, 146, 161); font-weight: 400; font-style: normal; font-size: 14px;">1 porção · sem parmesão</p>
+          </div>
+          <div class="order-actions">
+           <span data-template-id="order-1-waiting" class="canva-tag status waiting" data-status="waiting" style="background: rgb(255, 244, 223); color: rgb(173, 117, 21); font-weight: 400; font-style: normal; font-size: 14px;">Aguardando</span><span data-template-id="order-1-preparing" class="canva-tag status preparing" data-status="preparing" hidden="" style="background: rgb(231, 244, 255); color: rgb(49, 129, 188); font-weight: 400; font-style: normal; font-size: 14px;">Em preparo</span><span data-template-id="order-1-ready" class="canva-tag status ready" data-status="ready" hidden="" style="background: rgb(229, 247, 237); color: rgb(33, 135, 84); font-weight: 400; font-style: normal; font-size: 14px;">Pronto</span><button type="button" class="advance" aria-label="Avançar pedido 184"><span data-template-id="order-1-start" class="canva-text" data-action="waiting" style="color: rgb(17, 39, 56); font-weight: 800; font-style: normal; font-size: 14px;">Iniciar preparo</span><span data-template-id="order-1-finish" class="canva-text" data-action="preparing" hidden="" style="color: rgb(17, 39, 56); font-weight: 800; font-style: normal; font-size: 14px;">Marcar pronto</span></button>
+          </div>
+         </article>
+         <article class="order-card" data-stage="preparing" data-search="185 mesa 12 filé grelhado">
+          <div>
+           <div class="order-top">
+            <span data-template-id="order-2-id" class="canva-text order-id" style="color: rgb(36, 104, 157); font-weight: 800; font-style: normal; font-size: 14px;">#185</span><span data-template-id="order-2-table" class="canva-text order-table" style="color: rgb(125, 144, 162); font-weight: 400; font-style: normal; font-size: 14px;">Mesa 12</span>
+           </div><strong data-template-id="order-2-dish" class="canva-text order-dish" style="color: rgb(38, 60, 80); font-weight: 800; font-style: normal; font-size: 14px;">Filé grelhado</strong>
+           <p data-template-id="order-2-detail" class="canva-text order-detail" style="color: rgb(129, 146, 161); font-weight: 400; font-style: normal; font-size: 14px;">2 porções · ponto médio</p>
+          </div>
+          <div class="order-actions">
+           <span data-template-id="order-2-waiting" class="canva-tag status waiting" data-status="waiting" hidden="" style="background: rgb(255, 244, 223); color: rgb(173, 117, 21); font-weight: 400; font-style: normal; font-size: 14px;">Aguardando</span><span data-template-id="order-2-preparing" class="canva-tag status preparing" data-status="preparing" style="background: rgb(231, 244, 255); color: rgb(49, 129, 188); font-weight: 400; font-style: normal; font-size: 14px;">Em preparo</span><span data-template-id="order-2-ready" class="canva-tag status ready" data-status="ready" hidden="" style="background: rgb(229, 247, 237); color: rgb(33, 135, 84); font-weight: 400; font-style: normal; font-size: 14px;">Pronto</span><button type="button" class="advance" aria-label="Avançar pedido 185"><span data-template-id="order-2-start" class="canva-text" data-action="waiting" hidden="" style="color: rgb(17, 39, 56); font-weight: 800; font-style: normal; font-size: 14px;">Iniciar preparo</span><span data-template-id="order-2-finish" class="canva-text" data-action="preparing" style="color: rgb(17, 39, 56); font-weight: 800; font-style: normal; font-size: 14px;">Marcar pronto</span></button>
+          </div>
+         </article>
+         <article class="order-card" data-stage="waiting" data-search="186 mesa 07 massa ao pesto">
+          <div>
+           <div class="order-top">
+            <span data-template-id="order-3-id" class="canva-text order-id" style="color: rgb(36, 104, 157); font-weight: 800; font-style: normal; font-size: 14px;">#186</span><span data-template-id="order-3-table" class="canva-text order-table" style="color: rgb(125, 144, 162); font-weight: 400; font-style: normal; font-size: 14px;">Mesa 07</span>
+           </div><strong data-template-id="order-3-dish" class="canva-text order-dish" style="color: rgb(38, 60, 80); font-weight: 800; font-style: normal; font-size: 14px;">Massa ao pesto</strong>
+           <p data-template-id="order-3-detail" class="canva-text order-detail" style="color: rgb(129, 146, 161); font-weight: 400; font-style: normal; font-size: 14px;">1 porção · sem castanhas</p>
+          </div>
+          <div class="order-actions">
+           <span data-template-id="order-3-waiting" class="canva-tag status waiting" data-status="waiting" style="background: rgb(255, 244, 223); color: rgb(173, 117, 21); font-weight: 400; font-style: normal; font-size: 14px;">Aguardando</span><span data-template-id="order-3-preparing" class="canva-tag status preparing" data-status="preparing" hidden="" style="background: rgb(231, 244, 255); color: rgb(49, 129, 188); font-weight: 400; font-style: normal; font-size: 14px;">Em preparo</span><span data-template-id="order-3-ready" class="canva-tag status ready" data-status="ready" hidden="" style="background: rgb(229, 247, 237); color: rgb(33, 135, 84); font-weight: 400; font-style: normal; font-size: 14px;">Pronto</span><button type="button" class="advance" aria-label="Avançar pedido 186"><span data-template-id="order-3-start" class="canva-text" data-action="waiting" style="color: rgb(17, 39, 56); font-weight: 800; font-style: normal; font-size: 14px;">Iniciar preparo</span><span data-template-id="order-3-finish" class="canva-text" data-action="preparing" hidden="" style="color: rgb(17, 39, 56); font-weight: 800; font-style: normal; font-size: 14px;">Marcar pronto</span></button>
+          </div>
+         </article>
+         <article class="order-card" data-stage="ready" data-search="187 mesa 02 salada da casa">
+          <div>
+           <div class="order-top">
+            <span data-template-id="order-4-id" class="canva-text order-id" style="color: rgb(36, 104, 157); font-weight: 800; font-style: normal; font-size: 14px;">#187</span><span data-template-id="order-4-table" class="canva-text order-table" style="color: rgb(125, 144, 162); font-weight: 400; font-style: normal; font-size: 14px;">Mesa 02</span>
+           </div><strong data-template-id="order-4-dish" class="canva-text order-dish" style="color: rgb(38, 60, 80); font-weight: 800; font-style: normal; font-size: 14px;">Salada da casa</strong>
+           <p data-template-id="order-4-detail" class="canva-text order-detail" style="color: rgb(129, 146, 161); font-weight: 400; font-style: normal; font-size: 14px;">1 porção · molho à parte</p>
+          </div>
+          <div class="order-actions">
+           <span data-template-id="order-4-waiting" class="canva-tag status waiting" data-status="waiting" hidden="" style="background: rgb(255, 244, 223); color: rgb(173, 117, 21); font-weight: 400; font-style: normal; font-size: 14px;">Aguardando</span><span data-template-id="order-4-preparing" class="canva-tag status preparing" data-status="preparing" hidden="" style="background: rgb(231, 244, 255); color: rgb(49, 129, 188); font-weight: 400; font-style: normal; font-size: 14px;">Em preparo</span><span data-template-id="order-4-ready" class="canva-tag status ready" data-status="ready" style="background: rgb(229, 247, 237); color: rgb(33, 135, 84); font-weight: 400; font-style: normal; font-size: 14px;">Pronto</span><button type="button" class="advance" aria-label="Avançar pedido 187" hidden=""><span data-template-id="order-4-start" class="canva-text" data-action="waiting" hidden="" style="color: rgb(17, 39, 56); font-weight: 800; font-style: normal; font-size: 14px;">Iniciar preparo</span><span data-template-id="order-4-finish" class="canva-text" data-action="preparing" hidden="" style="color: rgb(17, 39, 56); font-weight: 800; font-style: normal; font-size: 14px;">Marcar pronto</span></button>
+          </div>
+         </article>
+        </div>
+        <p id="searchEmpty" data-template-id="search-empty" class="canva-text search-empty" hidden="" style="color: rgb(112, 131, 151); font-weight: 400; font-style: normal; font-size: 14px;">Nenhum pedido corresponde à busca.</p>
+       </section>
+       <div class="side-stack">
+        <section data-template-id="stock-panel" class="canva-panel card panel" aria-labelledby="stockHeading" style="background: rgb(255, 255, 255);">
+         <div class="panel-head">
+          <h2 id="stockHeading" data-template-id="stock-heading" class="canva-text" style="color: rgb(20, 43, 64); font-weight: 800; font-style: normal; font-size: 21px;">Atenção aos insumos</h2><button type="button" data-view="stock" data-template-id="stock-link" class="canva-link text-link" style="color: rgb(25, 117, 189); font-weight: 800; font-style: normal; font-size: 14px;">Ver estoque →</button>
+         </div>
+         <div class="info-row">
+          <div>
+           <strong data-template-id="stock-alert-title" class="canva-text" style="color: rgb(38, 60, 80); font-weight: 700; font-style: normal; font-size: 14px;">Cogumelos frescos</strong>
+           <p data-template-id="stock-alert-detail" class="canva-text" style="color: rgb(132, 148, 163); font-weight: 400; font-style: normal; font-size: 14px;">Quantidade baixa para o próximo turno.</p>
+          </div>
+         </div>
+         <div class="info-row">
+          <div>
+           <strong data-template-id="stock-ok-title" class="canva-text" style="color: rgb(38, 60, 80); font-weight: 700; font-style: normal; font-size: 14px;">Hortaliças</strong>
+           <p data-template-id="stock-ok-detail" class="canva-text" style="color: rgb(132, 148, 163); font-weight: 400; font-style: normal; font-size: 14px;">Conferência do turno em dia.</p>
+          </div>
+         </div>
+        </section>
+        <section data-template-id="operations-panel" class="canva-panel card panel" aria-labelledby="operationsHeading" style="background: rgb(255, 255, 255);">
+         <div class="panel-head">
+          <h2 id="operationsHeading" data-template-id="operations-heading" class="canva-text" style="color: rgb(20, 43, 64); font-weight: 800; font-style: normal; font-size: 21px;">Outras operações</h2>
+         </div>
+         <div class="stack">
+          <button type="button" data-view="recipes" data-template-id="recipes-link" class="canva-link text-link text-left" style="color: rgb(25, 117, 189); font-weight: 800; font-style: normal; font-size: 14px;">Consultar receitas →</button><button type="button" data-view="purchases" data-template-id="purchases-link" class="canva-link text-link text-left" style="color: rgb(25, 117, 189); font-weight: 800; font-style: normal; font-size: 14px;">Conferir compras →</button><button type="button" data-view="reports" data-template-id="reports-link" class="canva-link text-link text-left" style="color: rgb(25, 117, 189); font-weight: 800; font-style: normal; font-size: 14px;">Abrir relatórios →</button>
+         </div>
+        </section>
+       </div>
+      </div>
+     </section>
+     <section id="detailView" hidden="" aria-labelledby="detailTitle">
+      <div class="hero">
+       <p data-template-id="detail-eyebrow" class="canva-text eyebrow" style="color: rgb(99, 129, 154); font-weight: 800; font-style: normal; font-size: 14px;">MACHRY / ÁREA INTERNA</p>
+       <h1 id="detailTitle"></h1>
+       <p data-template-id="detail-description" class="canva-text intro" style="color: rgb(112, 131, 151); font-weight: 400; font-style: normal; font-size: 14px;">Informações de referência para a operação do restaurante.</p><span data-template-id="sample-note-detail" class="canva-tag sample-note" style="background: rgb(255, 247, 216); color: rgb(122, 89, 0); font-weight: 400; font-style: normal; font-size: 14px;">Dados de exemplo · alterações desta sessão</span>
+      </div>
+      <div id="ordersDetail" hidden="">
+       <p data-template-id="orders-detail-copy" class="canva-text intro mb-4" style="color: rgb(112, 131, 151); font-weight: 400; font-style: normal; font-size: 14px;">Use a busca acima para localizar um pedido e avance sua etapa no quadro abaixo.</p>
+      </div>
+      <section id="recipesDetail" data-template-id="recipes-panel" class="canva-panel card detail-card" hidden="" aria-labelledby="recipesHeading" style="background: rgb(255, 255, 255);">
+       <h2 id="recipesHeading" data-template-id="recipes-heading" class="canva-text" style="color: rgb(20, 43, 64); font-weight: 800; font-style: normal; font-size: 21px;">Quadro de receitas</h2>
+       <div class="two-column">
+        <article class="mini-card">
+         <h3 data-template-id="recipe-one-name" class="canva-text" style="color: rgb(20, 43, 64); font-weight: 800; font-style: normal; font-size: 16px;">Risoto de cogumelos</h3>
+         <p data-template-id="recipe-one-ingredients" class="canva-text" style="color: rgb(112, 131, 151); font-weight: 400; font-style: normal; font-size: 14px;">Arroz arbóreo, cogumelos frescos, caldo de legumes e parmesão.</p><strong data-template-id="recipe-one-cost" class="canva-text" style="color: rgb(20, 43, 64); font-weight: 700; font-style: normal; font-size: 14px;">Custo estimado por porção: R$ 18,50</strong>
+        </article>
+        <article class="mini-card">
+         <h3 data-template-id="recipe-two-name" class="canva-text" style="color: rgb(20, 43, 64); font-weight: 800; font-style: normal; font-size: 16px;">Massa ao pesto</h3>
+         <p data-template-id="recipe-two-ingredients" class="canva-text" style="color: rgb(112, 131, 151); font-weight: 400; font-style: normal; font-size: 14px;">Massa, manjericão, azeite, castanhas e parmesão.</p><strong data-template-id="recipe-two-cost" class="canva-text" style="color: rgb(20, 43, 64); font-weight: 700; font-style: normal; font-size: 14px;">Custo estimado por porção: R$ 12,80</strong>
+        </article>
+       </div>
+       <form id="recipeForm" class="mt-6" novalidate="">
+        <div>
+         <div class="field">
+            <br>
+          <label data-template-id="recipe-select-label" class="canva-text" for="recipeSelect" style="color: rgb(82, 107, 128); font-weight: 700; font-style: normal; font-size: 14px;">Receita</label><select id="recipeSelect"><option value="18.50">Risoto de cogumelos</option><option value="12.80">Massa ao pesto</option></select>
+         </div>
+         <div class="field">
+            <br>
+          <label data-template-id="portions-label" class="canva-text" for="portions" style="color: rgb(82, 107, 128); font-weight: 700; font-style: normal; font-size: 14px;">Quantidade de porções</label><input id="portions" type="number" min="1" max="999" step="1" value="1" required="">
+         </div>
+         <br>
+         <button data-template-id="calculate-button" class="canva-button primary" type="submit" style="background: rgb(255, 210, 31); color: rgb(17, 39, 56); font-weight: 800; font-style: normal; font-size: 14px;">Calcular custo</button>
+        </div>
+        <p id="recipeResult" class="calc-result" role="status"></p>
+       </form>
+      </section>
+      <section id="stockDetail" data-template-id="stock-detail-panel" class="canva-panel card detail-card" hidden="" aria-labelledby="stockDetailHeading" style="background: rgb(255, 255, 255);">
+       <h2 id="stockDetailHeading" data-template-id="stock-detail-title" class="canva-text" style="color: rgb(20, 43, 64); font-weight: 800; font-style: normal; font-size: 21px;">Conferência de insumos</h2>
+       <div class="detail-row">
+        <span data-template-id="stock-item-1" class="canva-text" style="color: rgb(20, 43, 64); font-weight: 400; font-style: normal; font-size: 14px;">Cogumelos frescos</span><span data-template-id="stock-item-1-state" class="canva-text" style="color: rgb(112, 131, 151); font-weight: 400; font-style: normal; font-size: 14px;">Baixo · conferir reposição</span>
+       </div>
+       <div class="detail-row">
+        <span data-template-id="stock-item-2" class="canva-text" style="color: rgb(20, 43, 64); font-weight: 400; font-style: normal; font-size: 14px;">Hortaliças</span><span data-template-id="stock-item-2-state" class="canva-text" style="color: rgb(112, 131, 151); font-weight: 400; font-style: normal; font-size: 14px;">Conferido para o turno</span>
+       </div>
+       <div class="detail-row">
+        <span data-template-id="stock-item-3" class="canva-text" style="color: rgb(20, 43, 64); font-weight: 400; font-style: normal; font-size: 14px;">Massas</span><span data-template-id="stock-item-3-state" class="canva-text" style="color: rgb(112, 131, 151); font-weight: 400; font-style: normal; font-size: 14px;">Disponível para o turno</span>
+       </div>
+      </section>
+      <section id="purchasesDetail" data-template-id="purchases-panel" class="canva-panel card detail-card" hidden="" aria-labelledby="purchasesHeading" style="background: rgb(255, 255, 255);">
+       <h2 id="purchasesHeading" data-template-id="purchases-heading" class="canva-text" style="color: rgb(20, 43, 64); font-weight: 800; font-style: normal; font-size: 21px;">Lista de compras</h2>
+       <p data-template-id="purchases-copy" class="canva-text intro" style="color: rgb(112, 131, 151); font-weight: 400; font-style: normal; font-size: 14px;">Marque os itens conferidos durante esta sessão.</p><label class="check-row"><input type="checkbox"><span data-template-id="purchase-one" class="canva-text" style="color: rgb(20, 43, 64); font-weight: 400; font-style: normal; font-size: 14px;">Cogumelos frescos · 3 kg</span></label><label class="check-row"><input type="checkbox"><span data-template-id="purchase-two" class="canva-text" style="color: rgb(20, 43, 64); font-weight: 400; font-style: normal; font-size: 14px;">Arroz arbóreo · 5 kg</span></label><label class="check-row"><input type="checkbox"><span data-template-id="purchase-three" class="canva-text" style="color: rgb(20, 43, 64); font-weight: 400; font-style: normal; font-size: 14px;">Manjericão · 1 kg</span></label>
+       <p id="purchaseProgress" class="calc-result" aria-live="polite"></p>
+      </section>
+      <section id="salesDetail" data-template-id="sales-panel" class="canva-panel card detail-card" hidden="" aria-labelledby="salesHeading" style="background: rgb(255, 255, 255);">
+       <h2 id="salesHeading" data-template-id="sales-heading" class="canva-text" style="color: rgb(20, 43, 64); font-weight: 800; font-style: normal; font-size: 21px;">Vendas do período · exemplo</h2>
+       <div class="detail-row">
+        <span data-template-id="sale-one" class="canva-text" style="color: rgb(20, 43, 64); font-weight: 400; font-style: normal; font-size: 14px;">Risoto de cogumelos · 12 unidades</span><span data-template-id="sale-one-value" class="canva-text" style="color: rgb(112, 131, 151); font-weight: 400; font-style: normal; font-size: 14px;">R$ 708,00</span>
+       </div>
+       <div class="detail-row">
+        <span data-template-id="sale-two" class="canva-text" style="color: rgb(20, 43, 64); font-weight: 400; font-style: normal; font-size: 14px;">Massa ao pesto · 9 unidades</span><span data-template-id="sale-two-value" class="canva-text" style="color: rgb(112, 131, 151); font-weight: 400; font-style: normal; font-size: 14px;">R$ 441,00</span>
+       </div>
+       <div class="detail-row">
+        <span data-template-id="sale-three" class="canva-text" style="color: rgb(20, 43, 64); font-weight: 400; font-style: normal; font-size: 14px;">Filé grelhado · 7 unidades</span><span data-template-id="sale-three-value" class="canva-text" style="color: rgb(112, 131, 151); font-weight: 400; font-style: normal; font-size: 14px;">R$ 553,00</span>
+       </div>
+       <p id="salesTotal" class="calc-result"></p>
+      </section>
+      <section id="financeDetail" data-template-id="finance-panel" class="canva-panel card detail-card" hidden="" aria-labelledby="financeHeading" style="background: rgb(255, 255, 255);">
+       <h2 id="financeHeading" data-template-id="finance-heading" class="canva-text" style="color: rgb(20, 43, 64); font-weight: 800; font-style: normal; font-size: 21px;">Resumo financeiro · exemplo</h2>
+       <div class="detail-row">
+        <span data-template-id="finance-revenue" class="canva-text" style="color: rgb(20, 43, 64); font-weight: 400; font-style: normal; font-size: 14px;">Receita de vendas</span><span id="financeRevenue"></span>
+       </div>
+       <div class="detail-row">
+        <span data-template-id="finance-food" class="canva-text" style="color: rgb(20, 43, 64); font-weight: 400; font-style: normal; font-size: 14px;">Custos de insumos</span><span data-template-id="finance-food-value" class="canva-text" style="color: rgb(112, 131, 151); font-weight: 400; font-style: normal; font-size: 14px;">R$ 620,00</span>
+       </div>
+       <div class="detail-row">
+        <span data-template-id="finance-other" class="canva-text" style="color: rgb(20, 43, 64); font-weight: 400; font-style: normal; font-size: 14px;">Outras despesas</span><span data-template-id="finance-other-value" class="canva-text" style="color: rgb(112, 131, 151); font-weight: 400; font-style: normal; font-size: 14px;">R$ 340,00</span>
+       </div>
+       <p id="financeBalance" class="calc-result"></p>
+      </section>
+      <section id="reportsDetail" data-template-id="reports-panel" class="canva-panel card detail-card" hidden="" aria-labelledby="reportsHeading" style="background: rgb(255, 255, 255);">
+       <h2 id="reportsHeading" data-template-id="reports-heading" class="canva-text" style="color: rgb(20, 43, 64); font-weight: 800; font-style: normal; font-size: 21px;">Relatório operacional · exemplo</h2>
+       <div class="field">
+        <label data-template-id="report-period-label" class="canva-text" for="reportPeriod" style="color: rgb(82, 107, 128); font-weight: 700; font-style: normal; font-size: 14px;">Período demonstrativo</label><select id="reportPeriod"><option value="day">Dia</option><option value="week">Semana</option></select>
+       </div>
+       <div class="report-grid">
+        <div class="report-tile">
+         <small data-template-id="report-sales-label" class="canva-text" style="color: rgb(112, 131, 151); font-weight: 700; font-style: normal; font-size: 14px;">Vendas</small><strong id="reportRevenue"></strong>
+        </div>
+        <div class="report-tile">
+         <small data-template-id="report-orders-label" class="canva-text" style="color: rgb(112, 131, 151); font-weight: 700; font-style: normal; font-size: 14px;">Pedidos</small><strong id="reportOrders"></strong>
+        </div>
+        <div class="report-tile">
+         <small data-template-id="report-ticket-label" class="canva-text" style="color: rgb(112, 131, 151); font-weight: 700; font-style: normal; font-size: 14px;">Ticket médio</small><strong id="reportTicket"></strong>
+        </div>
+       </div>
+      </section>
+      <section id="teamDetail" data-template-id="team-detail-panel" class="canva-panel card detail-card" hidden="" aria-labelledby="teamDetailHeading" style="background: rgb(255, 255, 255);">
+       <h2 id="teamDetailHeading" data-template-id="team-detail-title" class="canva-text" style="color: rgb(20, 43, 64); font-weight: 800; font-style: normal; font-size: 21px;">Organização da equipe</h2>
+       <div class="detail-row">
+        <span data-template-id="team-role-1" class="canva-text" style="color: rgb(20, 43, 64); font-weight: 400; font-style: normal; font-size: 14px;">Chef de cozinha</span><span data-template-id="team-role-1-task" class="canva-text" style="color: rgb(112, 131, 151); font-weight: 400; font-style: normal; font-size: 14px;">Coordenação e liberação dos pratos</span>
+       </div>
+       <div class="detail-row">
+        <span data-template-id="team-role-2" class="canva-text" style="color: rgb(20, 43, 64); font-weight: 400; font-style: normal; font-size: 14px;">Praça quente</span><span data-template-id="team-role-2-task" class="canva-text" style="color: rgb(112, 131, 151); font-weight: 400; font-style: normal; font-size: 14px;">Pratos quentes e finalização</span>
+       </div>
+       <div class="detail-row">
+        <span data-template-id="team-role-3" class="canva-text" style="color: rgb(20, 43, 64); font-weight: 400; font-style: normal; font-size: 14px;">Praça fria</span><span data-template-id="team-role-3-task" class="canva-text" style="color: rgb(112, 131, 151); font-weight: 400; font-style: normal; font-size: 14px;">Entradas e saladas</span>
+       </div>
+      </section>
+      <section id="apiDetail" class="canva-panel card detail-card" hidden aria-labelledby="apiHeading">
+        <h2 id="apiHeading">Cadastros conectados à API</h2>
+        <p class="intro">Gerencie os dados persistidos no backend. Selecione um cadastro, liste os registros e use o formulário JSON para criar ou atualizar.</p>
+        <div class="api-toolbar">
+          <label class="field">Cadastro
+            <select id="apiResource">
+              <option value="items">Itens</option>
+              <option value="lotes">Lotes</option>
+              <option value="fichas-tecnicas">Fichas técnicas</option>
+              <option value="processamentos">Processamentos</option>
+            </select>
+          </label>
+          <button id="apiRefresh" class="primary" type="button">Listar registros</button>
+          <button id="apiNew" class="api-secondary" type="button">Novo / limpar</button>
+        </div>
+        <p id="apiMessage" class="api-message" role="status">Conecte o backend e clique em “Listar registros”.</p>
+        <div class="api-editor">
+          <label class="field">ID para atualizar, consultar ou excluir
+            <input id="apiId" type="number" min="1" placeholder="Deixe vazio para criar">
+          </label>
+          <label class="field">Corpo JSON da requisição
+            <textarea id="apiPayload" rows="12" spellcheck="false"></textarea>
+          </label>
+          <div class="api-actions">
+            <button id="apiCreate" class="primary" type="button">Cadastrar</button>
+            <button id="apiUpdate" class="primary" type="button">Atualizar pelo ID</button>
+            <button id="apiGet" class="api-secondary" type="button">Consultar pelo ID</button>
+            <button id="apiDelete" class="api-danger" type="button">Excluir pelo ID</button>
+          </div>
+        </div>
+        <div class="api-results-wrap">
+          <h3>Registros encontrados</h3>
+          <div id="apiResults" class="api-results"></div>
+        </div>
+      </section>
+     </section>
+    </main>
+   </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.577.0/dist/umd/lucide.min.js"></script>
+  <script src="script.js"></script>
+</body></html>

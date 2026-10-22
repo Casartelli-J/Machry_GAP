@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping("/items")
 @Tag(name = "Itens", description = "Cadastro e manutenção de itens")
 public class ItemController {

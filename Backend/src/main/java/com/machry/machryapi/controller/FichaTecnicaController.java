@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping("/fichas-tecnicas")
 @Tag(name = "Fichas Técnicas", description = "Receitas planejadas, ingredientes e etapas")
 public class FichaTecnicaController {

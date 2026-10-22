@@ -14,14 +14,10 @@ public class Composicao {
     private String ingrediente;
     private Double quantidade;
     private String unidadeMedida;
-
-    // Relacionamento N:1 (Vários ingredientes pertencem a UMA ficha técnica)
     @ManyToOne
     @JoinColumn(name = "id_ficha")
     @JsonIgnore // Evita loop infinito na hora de mostrar o resultado na tela
     private FichaTecnica fichaTecnica;
-
-    // --- GETTERS E SETTERS ---
     public Integer getIdComposicao() { return idComposicao; }
     public void setIdComposicao(Integer idComposicao) { this.idComposicao = idComposicao; }
 
