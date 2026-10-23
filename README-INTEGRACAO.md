@@ -1,66 +1,53 @@
-# MACHRY — Front-end integrado à API
+# MACHRY — Aplicação com login e controle de acesso
 
-## Recursos integrados
+## Perfis
 
-- Interface original do MACHRY mantida.
-- Opção **Cadastros API** adicionada ao menu lateral.
-- Operações de cadastro, listagem, consulta por ID, atualização e exclusão para:
-  - Itens (`/items`)
-  - Lotes (`/lotes`)
-  - Fichas técnicas (`/fichas-tecnicas`)
-  - Processamentos (`/processamentos`)
-- Mensagens de sucesso e erro e exemplos de JSON.
+- **Cozinheiro:** Visão geral, Pedidos, Receitas, Estoque e Cadastros API.
+- **Financeiro:** Visão geral, Vendas, Financeiro e Relatórios.
+- **Gerente:** acesso operacional ampliado, incluindo compras, equipe e cadastros.
+- **Administrador geral:** todos os módulos e gerenciamento de usuários.
+
+O back-end valida o token e o perfil nos endpoints protegidos. Ocultar itens no menu não é a única camada de proteção.
 
 ## Requisitos
 
-- Java compatível com a versão definida no `pom.xml` (Java 25).
-- Docker Desktop com Docker Compose.
-- Python, caso seja necessário iniciar um servidor local para o front-end.
+- Java 25, conforme o `pom.xml`.
+- MySQL e phpMyAdmin (por exemplo, via XAMPP).
+- Python para servir o front-end localmente.
 
-## Executar o projeto
+## Configurar o banco
 
-### 1. Iniciar o banco de dados
+Crie o banco `machry_database` no MySQL. Se já usa o XAMPP, inicie o MySQL e confirme que o banco existe no phpMyAdmin; por padrão, a API tenta `localhost:3306`, usuário `root` e senha vazia.
 
-Abra um terminal na pasta `Backend` e execute:
+Como alternativa, na pasta `Backend`, execute `docker compose up -d` para iniciar MySQL e phpMyAdmin. Nesse caso, abra o phpMyAdmin em `http://localhost:8081`, entre com usuário `root` e senha `machryRoot123`, e inicie a API com a variável `DB_PASSWORD=machryRoot123` definida no terminal. A API aceita as variáveis `DB_URL`, `DB_USERNAME` e `DB_PASSWORD` para personalizar a conexão.
 
-```bash
-docker compose up -d
-```
+## Executar o back-end
 
-O PostgreSQL será iniciado na porta `5432`.
-
-### 2. Iniciar a API
-
-Ainda na pasta `Backend`, execute no Windows:
+No terminal, abra a pasta `Backend` e execute no Windows:
 
 ```bat
 mvnw.cmd spring-boot:run
 ```
 
-No Linux ou macOS:
+A API ficará em `http://localhost:8080`. O Hibernate cria/atualiza a tabela `usuarios` e as tabelas mapeadas pelas entidades.
 
-```bash
-./mvnw spring-boot:run
-```
+## Primeiro acesso
 
-A API ficará disponível em `http://localhost:8080`.
+Na primeira execução, a API cria um administrador se ainda não existir: `admin@machry.local` com senha `Machry@123`. Para definir credenciais iniciais diferentes, configure `MACHRY_ADMIN_EMAIL` e `MACHRY_ADMIN_PASSWORD` antes da primeira inicialização da API. A tela de alteração de senha ainda não faz parte desta versão.
 
-### 3. Iniciar o front-end
+## Executar o front-end
 
-Abra `Frontend/Machry/index.html` no navegador. Se as chamadas à API não funcionarem ao abrir o arquivo diretamente, inicie um servidor local dentro da pasta `Frontend/Machry`:
+Na pasta `Frontend/Machry`, execute:
 
 ```bash
 python -m http.server 5500
 ```
 
-Acesse `http://localhost:5500`.
+Abra `http://localhost:5500`. Entre com o administrador inicial e use a seção **Equipe** para criar usuários, definir perfis e ativar/desativar contas.
 
-## Utilizar os CRUDs
+## Observações de segurança
 
-1. Abra **Cadastros API** no menu lateral.
-2. Escolha Itens, Lotes, Fichas técnicas ou Processamentos.
-3. Clique em **Listar registros** para consultar os dados.
-4. Preencha os campos ou o JSON de acordo com o recurso e clique em **Cadastrar**.
-5. Para consultar, atualizar ou excluir, informe o ID e use a ação correspondente.
-
-Os registros relacionados usados em fichas técnicas e processamentos precisam existir no banco de dados.
+- As senhas são armazenadas com BCrypt.
+- Os tokens expiram após oito horas e ficam em memória; reiniciar a API encerra as sessões ativas.
+- A senha padrão é apenas para desenvolvimento; não use essas credenciais em um ambiente real.
+- Os módulos de financeiro/vendas existentes no front são demonstrativos; endpoints reais para esses módulos ainda precisam ser desenvolvidos no back-end.

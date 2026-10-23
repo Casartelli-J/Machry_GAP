@@ -1,3 +1,63 @@
+const MACHRY_API = 'http://localhost:8080';
+const AUTH_TOKEN_KEY = 'machryAuthToken';
+const AUTH_USER_KEY = 'machryAuthUser';
+let machryToken = localStorage.getItem(AUTH_TOKEN_KEY);
+let machryUser = null;
+const roleNames = { COZINHEIRO: 'Cozinheiro', FINANCEIRO: 'Financeiro', GERENTE: 'Gerente', ADMIN_GERAL: 'Administrador geral' };
+const roleViews = {
+  COZINHEIRO: ['home','orders','recipes','stock','api'],
+  FINANCEIRO: ['home','sales','finance','reports'],
+  GERENTE: ['home','orders','recipes','stock','purchases','sales','finance','reports','team','api'],
+  ADMIN_GERAL: ['home','orders','recipes','stock','purchases','sales','finance','reports','team','api']
+};
+const loginScreen = document.getElementById('loginScreen');
+const appShell = document.getElementById('appShell');
+const loginForm = document.getElementById('loginForm');
+const loginMessage = document.getElementById('loginMessage');
+function showLogin(message = '') {
+  machryToken = null; machryUser = null; localStorage.removeItem(AUTH_TOKEN_KEY); localStorage.removeItem(AUTH_USER_KEY);
+  loginScreen.hidden = false; appShell.hidden = true;
+  loginMessage.textContent = message; loginMessage.hidden = !message;
+}
+function applyUser(user) {
+  machryUser = user;
+  loginScreen.hidden = true; appShell.hidden = false;
+  document.getElementById('currentUserName').textContent = user.nome;
+  document.getElementById('currentUserRole').textContent = roleNames[user.role] || user.role;
+  document.querySelectorAll('.nav-item[data-view]').forEach(button => {
+    const view = button.dataset.view;
+    button.hidden = !(roleViews[user.role] || []).includes(view);
+  });
+  document.getElementById('userAdminPanel').hidden = user.role !== 'ADMIN_GERAL';
+  document.querySelectorAll('[data-view]').forEach(button => {
+    if (button.hidden) button.setAttribute('aria-hidden','true'); else button.removeAttribute('aria-hidden');
+  });
+}
+loginForm.addEventListener('submit', async event => {
+  event.preventDefault(); loginMessage.hidden = true;
+  const button = document.getElementById('loginSubmit'); button.disabled = true; button.textContent = 'Entrando...';
+  try {
+    const response = await fetch(`${MACHRY_API}/api/auth/login`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email:document.getElementById('loginEmail').value.trim(), senha:document.getElementById('loginPassword').value}) });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.message || 'Não foi possível entrar. Confira o e-mail e a senha.');
+    machryToken = data.token; localStorage.setItem(AUTH_TOKEN_KEY, machryToken); localStorage.setItem(AUTH_USER_KEY, JSON.stringify(data.usuario));
+    applyUser(data.usuario);
+  } catch(error) { showLogin(error.message || 'Não foi possível conectar à API. Verifique se o back-end está iniciado.'); }
+  finally { button.disabled = false; button.textContent = 'Entrar'; }
+});
+document.getElementById('logoutButton').addEventListener('click', async () => {
+  try { if (machryToken) await fetch(`${MACHRY_API}/api/auth/logout`, {method:'POST', headers:{Authorization:`Bearer ${machryToken}`}}); } catch {}
+  showLogin(); document.getElementById('loginPassword').value = '';
+});
+(async function restoreSession(){
+  if (!machryToken) return showLogin();
+  try {
+    const response = await fetch(`${MACHRY_API}/api/auth/me`, {headers:{Authorization:`Bearer ${machryToken}`}});
+    if (!response.ok) throw new Error('Sessão expirada');
+    applyUser(await response.json());
+  } catch { showLogin('Sua sessão expirou. Entre novamente.'); }
+})();
+
 lucide.createIcons();
   const sidebar = document.getElementById('sidebar');
   const menuToggle = document.getElementById('menuToggle');
@@ -10,6 +70,7 @@ lucide.createIcons();
   const titles = {orders:'Pedidos',recipes:'Receitas',stock:'Estoque',purchases:'Compras',sales:'Vendas',finance:'Financeiro',reports:'Relatórios',team:'Equipe',api:'Cadastros API'};
 
   function navigate(view) {
+    if (machryUser && !(roleViews[machryUser.role] || []).includes(view)) return;
     const isHome = view === 'home';
     homeView.hidden = !isHome;
     detailView.hidden = isHome;
@@ -145,7 +206,7 @@ lucide.createIcons();
     try {
       response = await fetch(`${endpoint()}${path}`, {
         ...options,
-        headers: { 'Content-Type': 'application/json', ...(options.headers || {}) }
+        headers: { 'Content-Type': 'application/json', ...(machryToken ? { 'Authorization': `Bearer ${machryToken}` } : {}), ...(options.headers || {}) }
       });
     } catch {
       throw new Error('Não foi possível conectar à API. Confirme se o backend está rodando em http://localhost:8080 e se o CORS está habilitado.');
@@ -268,4 +329,37 @@ lucide.createIcons();
   });
 
   $('apiPayload').value = JSON.stringify(samplePayloads.items, null, 2);
+})();
+
+(async function setupUserAdministration(){
+  const form = document.getElementById('createUserForm');
+  if (!form) return;
+  const message = document.getElementById('userAdminMessage');
+  const list = document.getElementById('userList');
+  const showMessage = (text, error=false) => { message.textContent=text; message.hidden=false; message.classList.toggle('error',error); };
+  async function adminRequest(path, options={}) {
+    const response = await fetch(`${MACHRY_API}/api/admin/usuarios${path}`, { ...options, headers:{'Content-Type':'application/json', ...(machryToken?{Authorization:`Bearer ${machryToken}`}:{})} });
+    const data = await response.json().catch(()=>null);
+    if (!response.ok) throw new Error(data?.message || `Erro HTTP ${response.status}`);
+    return data;
+  }
+  async function loadUsers() {
+    if (!machryUser || machryUser.role !== 'ADMIN_GERAL') return;
+    try { const users=await adminRequest(''); list.innerHTML=users.map(user=>`<article class="user-row"><div><strong>${escapeUserHtml(user.nome)}</strong><small>${escapeUserHtml(user.email)} · ${roleNames[user.role] || user.role}</small></div><div><span class="user-status ${user.ativo?'':'inactive'}">${user.ativo?'Ativo':'Inativo'}</span> ${user.id !== machryUser.id ? `<button class="api-secondary" type="button" data-user-toggle="${user.id}" data-active="${user.ativo}">${user.ativo?'Desativar':'Ativar'}</button>` : '<small>Conta atual</small>'}</div></article>`).join(''); }
+    catch(error) { showMessage(error.message,true); }
+  }
+  function escapeUserHtml(value) { return String(value ?? '').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  form.addEventListener('submit', async event=>{
+    event.preventDefault();
+    try { await adminRequest('',{method:'POST',body:JSON.stringify({nome:document.getElementById('newUserName').value.trim(),email:document.getElementById('newUserEmail').value.trim(),senha:document.getElementById('newUserPassword').value,role:document.getElementById('newUserRole').value})});
+      form.reset(); showMessage('Usuário criado com sucesso.'); await loadUsers();
+    } catch(error) { showMessage(error.message,true); }
+  });
+  list.addEventListener('click', async event=>{
+    const button=event.target.closest('[data-user-toggle]'); if(!button) return;
+    try { await adminRequest(`/${button.dataset.userToggle}/status`,{method:'PATCH',body:JSON.stringify({ativo:button.dataset.active !== 'true'})}); showMessage('Status do usuário atualizado.'); await loadUsers(); }
+    catch(error) { showMessage(error.message,true); }
+  });
+  const originalApplyUser=applyUser;
+  applyUser=function(user){ originalApplyUser(user); if(user.role==='ADMIN_GERAL') loadUsers(); };
 })();
