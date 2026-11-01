@@ -2205,18 +2205,3 @@ Planejar
 ```
 
 E os bugs encontrados no uso manual — exclusão de localização, senha de teste hardcoded, transferência dependente de lote vazio e transformação pouco intuitiva — foram tratados como parte natural da estabilização do produto, não como exceções escondidas.
-
----
-
-## 🏁 Regra de ouro para continuar o projeto
-
-Antes de adicionar uma nova feature, pergunte:
-
-1. **Qual domínio é dono dessa regra?**
-2. **A operação precisa ser transacional?**
-3. **Ela altera estoque? Se sim, deixa uma movimentação?**
-4. **Estou preservando histórico ou sobrescrevendo o passado?**
-5. **O frontend está pedindo uma ação de negócio ou detalhes internos do banco?**
-6. **Existe teste para o cenário feliz e para a falha mais perigosa?**
-
-Se essas respostas estiverem claras, o Machry continua crescendo sem voltar a virar dois sistemas brigando pelo mesmo estoque. 🔥
