@@ -170,7 +170,11 @@ def test_cozinha_e_a_autora_da_baixa_quando_conclui(seeded_client):
 
     c.post("/api/auth/logout")
     login = c.post(
-        "/api/auth/login", json={"username": "cozinha", "password": "Cozinha@123"}
+        "/api/auth/login",
+        json={
+            "username": c.application.config["COOK_USERNAME"],
+            "password": c.application.config["COOK_INITIAL_PASSWORD"],
+        },
     )
     assert login.status_code == 200
 

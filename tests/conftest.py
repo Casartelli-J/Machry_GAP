@@ -10,6 +10,8 @@ def app(tmp_path):
         "DATABASE_PATH": str(tmp_path / "test.db"),
         "SECRET_KEY": "test-secret",
         "OWNER_INITIAL_PASSWORD": "Teste@123",
+        "MANAGER_INITIAL_PASSWORD": "GestorTeste@123",
+        "COOK_INITIAL_PASSWORD": "CozinhaTeste@123",
     })
 
 

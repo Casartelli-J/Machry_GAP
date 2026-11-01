@@ -339,7 +339,10 @@ def test_cozinha_pode_registrar_execucao(seeded_client):
     seeded_client.post("/api/auth/logout")
     login = seeded_client.post(
         "/api/auth/login",
-        json={"username": "cozinha", "password": "Cozinha@123"},
+        json={
+            "username": seeded_client.application.config["COOK_USERNAME"],
+            "password": seeded_client.application.config["COOK_INITIAL_PASSWORD"],
+        },
     )
     assert login.status_code == 200
 
