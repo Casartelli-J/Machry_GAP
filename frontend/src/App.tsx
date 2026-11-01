@@ -71,7 +71,7 @@ export function App() {
   else if (view === 'inicio') page = <DashboardPage produtos={produtos} fichas={fichas} inventario={inventario} canManage={canManageCatalog} onNewSheet={() => setSheetModal('new')} onEditSheet={setSheetModal} />
   else if (view === 'produtos') page = <ProductsPage produtos={produtos} onNew={() => setProductModal('new')} onEdit={setProductModal} />
   else if (view === 'fichas') page = <SheetsPage fichas={fichas} canManage={canManageCatalog} onNew={() => setSheetModal('new')} onEdit={setSheetModal} />
-  else if (view === 'estoque') page = <><StockPage inventario={inventario} lotes={lotes} onNew={() => setStockModal('new')} onMove={setStockModal} /><TransferPage lotes={lotes} produtos={produtos} onChanged={() => load(usuario)} /><LotDetails lotes={lotes} onChanged={() => load(usuario)} /></>
+  else if (view === 'estoque') page = <><StockPage inventario={inventario} lotes={lotes} onNew={() => setStockModal('new')} onMove={setStockModal} /><TransferPage lotes={lotes} produtos={produtos} localizacoes={localizacoes} onChanged={() => load(usuario)} /><LotDetails lotes={lotes} onChanged={() => load(usuario)} /></>
   else if (view === 'historico') page = <HistoryPage lotes={lotes} produtos={produtos} reload={() => void load(usuario)} />
   else if (view === 'locais') page = <LocationsPage locations={localizacoes} onChanged={() => load(usuario)} />
   else if (view === 'usuarios') page = usuario.papel === 'OWNER' ? <UsersPage current={usuario} /> : <section className="panel">Acesso restrito.</section>

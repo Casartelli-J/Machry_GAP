@@ -668,7 +668,8 @@ components:
         lote_id: {type: integer, minimum: 1}
         usuario_id: {type: integer, minimum: 1, deprecated: true, description: Campo legado ignorado; a autoria vem da sessão autenticada}
         quantidade: {type: number, minimum: 0, exclusiveMinimum: true}
-        lote_destino_id: {type: integer, minimum: 1, nullable: true, description: Obrigatório para TRANSFERENCIA/TRANSFORMACAO; precisa ser diferente de lote_id}
+        lote_destino_id: {type: integer, minimum: 1, nullable: true, description: Compatibilidade legada para TRANSFERENCIA; obrigatório para TRANSFORMACAO; precisa ser diferente de lote_id}
+        localizacao_destino_id: {type: integer, minimum: 1, nullable: true, description: Forma preferencial de TRANSFERENCIA; o backend cria ou reutiliza um lote compatível na localização}
         quantidade_destino: {type: number, minimum: 0, exclusiveMinimum: true, nullable: true, description: Obrigatória apenas para TRANSFORMACAO}
         motivo: {type: string, nullable: true, description: Obrigatório para SAIDA/AJUSTE_ENTRADA/AJUSTE_SAIDA/PERDA}
         observacao: {type: string, nullable: true}

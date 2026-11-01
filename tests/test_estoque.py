@@ -190,3 +190,74 @@ def test_atualizar_lote(seeded_client):
 def test_sugestao_saida_validacoes(client):
     assert client.get('/api/estoque/sugestao-saida/1').status_code == 400  # sem quantidade
     assert client.get('/api/estoque/sugestao-saida/9999?quantidade=1').status_code == 404
+
+
+def test_transferencia_por_localizacao_cria_e_reutiliza_lote_destino(seeded_client):
+    c = seeded_client
+    origem = c.post(
+        '/api/estoque/lotes',
+        json={
+            'produto_id': 1,
+            'localizacao_id': 1,
+            'data_producao': '2026-11-01',
+            'data_validade': '2027-11-01',
+            'custo_unitario': 12.5,
+        },
+    ).get_json()
+    c.post('/api/estoque/movimentacoes', json={
+        'tipo': 'ENTRADA', 'lote_id': origem['id'], 'quantidade': 10
+    })
+
+    primeira = c.post('/api/estoque/movimentacoes', json={
+        'tipo': 'TRANSFERENCIA',
+        'lote_id': origem['id'],
+        'localizacao_destino_id': 5,  # Cozinha também é SECO.
+        'quantidade': 4,
+        'observacao': 'Reposição da cozinha',
+    })
+    assert primeira.status_code == 201, primeira.get_json()
+    movimento = primeira.get_json()
+    assert movimento['lote_destino_id'] is not None
+
+    destino_id = movimento['lote_destino_id']
+    destino = c.get(f'/api/estoque/lotes/{destino_id}').get_json()
+    assert destino['produto_id'] == origem['produto_id']
+    assert destino['localizacao_id'] == 5
+    assert destino['quantidade'] == 4
+    assert destino['data_producao'] == origem['data_producao']
+    assert destino['data_validade'] == origem['data_validade']
+    assert destino['custo_unitario'] == origem['custo_unitario']
+    assert c.get(f"/api/estoque/lotes/{origem['id']}").get_json()['quantidade'] == 6
+
+    segunda = c.post('/api/estoque/movimentacoes', json={
+        'tipo': 'TRANSFERENCIA',
+        'lote_id': origem['id'],
+        'localizacao_destino_id': 5,
+        'quantidade': 1,
+    })
+    assert segunda.status_code == 201, segunda.get_json()
+    assert segunda.get_json()['lote_destino_id'] == destino_id
+    assert c.get(f'/api/estoque/lotes/{destino_id}').get_json()['quantidade'] == 5
+    assert c.get(f"/api/estoque/lotes/{origem['id']}").get_json()['quantidade'] == 5
+
+
+def test_transferencia_por_localizacao_rejeita_destino_incompativel_e_mesma_origem(seeded_client):
+    c = seeded_client
+    origem = c.post('/api/estoque/lotes', json={'produto_id': 1, 'localizacao_id': 1}).get_json()
+    c.post('/api/estoque/movimentacoes', json={
+        'tipo': 'ENTRADA', 'lote_id': origem['id'], 'quantidade': 10
+    })
+
+    mesma = c.post('/api/estoque/movimentacoes', json={
+        'tipo': 'TRANSFERENCIA', 'lote_id': origem['id'],
+        'localizacao_destino_id': 1, 'quantidade': 2,
+    })
+    assert mesma.status_code == 400
+
+    incompativel = c.post('/api/estoque/movimentacoes', json={
+        'tipo': 'TRANSFERENCIA', 'lote_id': origem['id'],
+        'localizacao_destino_id': 2, 'quantidade': 2,  # Câmara Fria é RESFRIADO.
+    })
+    assert incompativel.status_code == 400
+    assert c.get(f"/api/estoque/lotes/{origem['id']}").get_json()['quantidade'] == 10
+    assert c.get('/api/estoque/lotes?produto_id=1&localizacao_id=2').get_json() == []

@@ -121,6 +121,7 @@ class MovimentacaoCreate(BaseModel):
     usuario_id: Optional[int] = Field(default=None, gt=0, strict=True)
     quantidade: float = Field(gt=0, allow_inf_nan=False, strict=True)
     lote_destino_id: Optional[int] = Field(default=None, gt=0, strict=True)
+    localizacao_destino_id: Optional[int] = Field(default=None, gt=0, strict=True)
     quantidade_destino: Optional[float] = Field(default=None, gt=0, allow_inf_nan=False, strict=True)
     motivo: Optional[str] = None
     observacao: Optional[str] = None
@@ -132,11 +133,24 @@ class MovimentacaoCreate(BaseModel):
             self.motivo = None
         if self.tipo in {"SAIDA", "AJUSTE_ENTRADA", "AJUSTE_SAIDA", "PERDA"} and not self.motivo:
             raise ValueError("motivo obrigatório")
-        exige_destino = self.tipo in {"TRANSFERENCIA", "TRANSFORMACAO"}
-        if exige_destino != (self.lote_destino_id is not None):
+        tem_lote_destino = self.lote_destino_id is not None
+        tem_local_destino = self.localizacao_destino_id is not None
+
+        if self.tipo == "TRANSFERENCIA":
+            if tem_lote_destino == tem_local_destino:
+                raise ValueError(
+                    "transferência exige exatamente um destino: lote_destino_id ou localizacao_destino_id"
+                )
+        elif self.tipo == "TRANSFORMACAO":
+            if not tem_lote_destino or tem_local_destino:
+                raise ValueError(
+                    "transformação exige lote_destino_id e não aceita localizacao_destino_id"
+                )
+        elif tem_lote_destino or tem_local_destino:
             raise ValueError(
-                "lote_destino_id obrigatório apenas para transferência/transformação"
+                "destino só é permitido para transferência/transformação"
             )
+
         exige_qtd_destino = self.tipo == "TRANSFORMACAO"
         if exige_qtd_destino != (self.quantidade_destino is not None):
             raise ValueError(

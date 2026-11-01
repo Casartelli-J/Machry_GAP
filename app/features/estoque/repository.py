@@ -176,6 +176,27 @@ class EstoqueRepository:
     def obter_lote(self, lote_id: int, para_atualizacao: bool = False) -> Optional[Lote]:
         return db.session.get(Lote, lote_id, with_for_update=para_atualizacao)
 
+    def buscar_lote_transferencia_compativel(
+        self, origem: Lote, localizacao_destino_id: int
+    ) -> Optional[Lote]:
+        """Reaproveita somente um lote que represente o mesmo lote físico/histórico.
+
+        Produto e localização não bastam: validade, produção e custo também precisam
+        coincidir para evitar a mistura de lotes com rastreabilidades diferentes.
+        """
+        consulta = db.session.query(Lote).filter(
+            Lote.id != origem.id,
+            Lote.produto_id == origem.produto_id,
+            Lote.localizacao_id == localizacao_destino_id,
+            Lote.data_producao == origem.data_producao,
+            Lote.data_validade == origem.data_validade,
+        )
+        if origem.custo_unitario is None:
+            consulta = consulta.filter(Lote.custo_unitario.is_(None))
+        else:
+            consulta = consulta.filter(Lote.custo_unitario == origem.custo_unitario)
+        return consulta.order_by(Lote.id).first()
+
     def inserir_lote(
         self, *, produto_id, localizacao_id, data_producao, data_validade, custo_unitario
     ) -> Lote:

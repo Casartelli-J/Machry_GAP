@@ -226,3 +226,9 @@ Em `APP_ENV=production`, o startup rejeita SQLite, `SECRET_KEY` insegura, cookie
 A integração de ponta a ponta está coberta por `tests/test_e2e_fluxo_completo.py`. O cenário atravessa autenticação e primeiro acesso, planejamento, execução, perdas, consumo FEFO, conclusão, geração do lote final, inventário e auditoria.
 
 Resultado da Fase 9 no ambiente de validação: **71 testes funcionais + 3 testes de migrations = 74 testes passando**. Consulte `docs/FASE9_INTEGRACAO_COMPLETA.md` para o cenário completo e as limitações de PostgreSQL deste ambiente.
+
+## Hotfix — transferência por localização
+
+A transferência de estoque agora recebe diretamente uma **localização de destino** no frontend. O backend cria ou reutiliza automaticamente um lote compatível, preservando produto, data de produção, validade e custo do lote de origem. O contrato antigo com `lote_destino_id` continua aceito para compatibilidade.
+
+Consulte `docs/HOTFIX_TRANSFERENCIA_LOCALIZACAO.md` para os detalhes.

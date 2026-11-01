@@ -41,7 +41,11 @@ class EstoqueService:
             self._validar_usuario_ativo(usuario_id)
             self._validar_saldo_suficiente(origem, dados)
             destino = None
-            if dados.lote_destino_id is not None:
+            if dados.tipo == "TRANSFERENCIA" and dados.localizacao_destino_id is not None:
+                destino = self._obter_ou_criar_destino_transferencia(
+                    origem, dados.localizacao_destino_id
+                )
+            elif dados.lote_destino_id is not None:
                 destino = self._validar_lote_destino(origem, dados)
             return self.repository.inserir_movimentacao(
                 tipo=dados.tipo,
@@ -250,6 +254,33 @@ class EstoqueService:
     def _validar_saldo_suficiente(self, origem, dados: schemas.MovimentacaoCreate) -> None:
         if dados.tipo in TIPOS_QUE_EXIGEM_SAIDA and origem.quantidade < dados.quantidade:
             raise ValueError("saldo insuficiente")
+
+    def _obter_ou_criar_destino_transferencia(self, origem, localizacao_destino_id: int):
+        if origem.localizacao_id == localizacao_destino_id:
+            raise ValueError("localização de destino precisa ser diferente da origem")
+
+        local_destino = self.repository.obter_localizacao(localizacao_destino_id)
+        if local_destino is None:
+            raise RegistroNaoEncontrado("localização de destino não encontrada")
+
+        produto = self.repository.obter_produto(origem.produto_id)
+        if produto is None:
+            raise RegistroNaoEncontrado("produto do lote de origem não encontrado")
+        self._validar_conservacao_compativel(produto, local_destino)
+
+        destino = self.repository.buscar_lote_transferencia_compativel(
+            origem, localizacao_destino_id
+        )
+        if destino is not None:
+            return destino
+
+        return self.repository.inserir_lote(
+            produto_id=origem.produto_id,
+            localizacao_id=localizacao_destino_id,
+            data_producao=origem.data_producao,
+            data_validade=origem.data_validade,
+            custo_unitario=origem.custo_unitario,
+        )
 
     def _validar_lote_destino(self, origem, dados: schemas.MovimentacaoCreate):
         destino = self._obter_lote_ou_falhar(dados.lote_destino_id, para_atualizacao=True)
