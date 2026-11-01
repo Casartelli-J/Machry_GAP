@@ -91,6 +91,14 @@ export interface Lote {
   criado_em: string
 }
 
+export interface TransformacaoDisponivel {
+  produto_origem_id: number
+  produto_destino_id: number
+  produto_destino: string
+  unidade_medida: string
+  conservacao: Conservacao
+}
+
 export interface SolicitacaoProducao {
   id: number
   ficha_tecnica_id: number

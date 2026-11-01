@@ -4,7 +4,7 @@ from __future__ import annotations
 from datetime import date
 from typing import Literal, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, computed_field, model_validator
 
 TipoLocalizacao = Literal["SECO", "RESFRIADO", "CONGELADO"]
 TipoMovimentacao = Literal[
@@ -121,6 +121,7 @@ class MovimentacaoCreate(BaseModel):
     usuario_id: Optional[int] = Field(default=None, gt=0, strict=True)
     quantidade: float = Field(gt=0, allow_inf_nan=False, strict=True)
     lote_destino_id: Optional[int] = Field(default=None, gt=0, strict=True)
+    produto_destino_id: Optional[int] = Field(default=None, gt=0, strict=True)
     localizacao_destino_id: Optional[int] = Field(default=None, gt=0, strict=True)
     quantidade_destino: Optional[float] = Field(default=None, gt=0, allow_inf_nan=False, strict=True)
     motivo: Optional[str] = None
@@ -134,19 +135,24 @@ class MovimentacaoCreate(BaseModel):
         if self.tipo in {"SAIDA", "AJUSTE_ENTRADA", "AJUSTE_SAIDA", "PERDA"} and not self.motivo:
             raise ValueError("motivo obrigatório")
         tem_lote_destino = self.lote_destino_id is not None
+        tem_produto_destino = self.produto_destino_id is not None
         tem_local_destino = self.localizacao_destino_id is not None
 
         if self.tipo == "TRANSFERENCIA":
-            if tem_lote_destino == tem_local_destino:
+            if tem_produto_destino or tem_lote_destino == tem_local_destino:
                 raise ValueError(
                     "transferência exige exatamente um destino: lote_destino_id ou localizacao_destino_id"
                 )
         elif self.tipo == "TRANSFORMACAO":
-            if not tem_lote_destino or tem_local_destino:
+            legado = tem_lote_destino and not tem_produto_destino and not tem_local_destino
+            automatico = (
+                not tem_lote_destino and tem_produto_destino and tem_local_destino
+            )
+            if legado == automatico:
                 raise ValueError(
-                    "transformação exige lote_destino_id e não aceita localizacao_destino_id"
+                    "transformação exige lote_destino_id (legado) ou produto_destino_id + localizacao_destino_id"
                 )
-        elif tem_lote_destino or tem_local_destino:
+        elif tem_lote_destino or tem_produto_destino or tem_local_destino:
             raise ValueError(
                 "destino só é permitido para transferência/transformação"
             )
@@ -189,6 +195,43 @@ class MovimentacaoOut(BaseModel):
     sp_componente_id: Optional[int] = None
     observacao: Optional[str] = None
     criado_em: str
+
+    @computed_field
+    @property
+    def perda_transformacao(self) -> Optional[float]:
+        if self.tipo != "TRANSFORMACAO" or self.quantidade_destino is None:
+            return None
+        return round(max(self.quantidade - self.quantidade_destino, 0.0), 6)
+
+    @computed_field
+    @property
+    def rendimento_percentual(self) -> Optional[float]:
+        if self.tipo != "TRANSFORMACAO" or self.quantidade_destino is None:
+            return None
+        return round((self.quantidade_destino / self.quantidade) * 100, 2)
+
+
+class TransformacaoQuery(BaseModel):
+    produto_origem_id: Optional[int] = Field(default=None, gt=0)
+
+
+class TransformacaoCreate(BaseModel):
+    produto_origem_id: int = Field(gt=0, strict=True)
+    produto_destino_id: int = Field(gt=0, strict=True)
+
+    @model_validator(mode="after")
+    def _produtos_diferentes(self):
+        if self.produto_origem_id == self.produto_destino_id:
+            raise ValueError("produto de origem e destino precisam ser diferentes")
+        return self
+
+
+class TransformacaoDisponivelOut(BaseModel):
+    produto_origem_id: int
+    produto_destino_id: int
+    produto_destino: str
+    unidade_medida: str
+    conservacao: str
 
 
 class InventarioQuery(BaseModel):

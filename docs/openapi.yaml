@@ -294,6 +294,50 @@ paths:
               schema: {$ref: "#/components/schemas/Movimentacao"}
         "400": {$ref: "#/components/responses/Invalido"}
 
+  /api/estoque/transformacoes:
+    get:
+      summary: Lista transformações de produto cadastradas
+      tags: [estoque]
+      parameters:
+        - {name: produto_origem_id, in: query, schema: {type: integer, minimum: 1}}
+      responses:
+        "200":
+          description: Produtos de destino permitidos para transformação
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: "#/components/schemas/TransformacaoDisponivel"}
+        "400": {$ref: "#/components/responses/Invalido"}
+    post:
+      summary: Cadastra uma transformação permitida entre dois produtos
+      tags: [estoque]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/TransformacaoCriar"}
+      responses:
+        "201":
+          description: Transformação cadastrada
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/TransformacaoDisponivel"}
+        "400": {$ref: "#/components/responses/Invalido"}
+        "404": {$ref: "#/components/responses/NaoEncontrado"}
+        "409": {description: Par duplicado ou unidades incompatíveis}
+
+  /api/estoque/transformacoes/{produto_origem_id}/{produto_destino_id}:
+    parameters:
+      - {name: produto_origem_id, in: path, required: true, schema: {type: integer, minimum: 1}}
+      - {name: produto_destino_id, in: path, required: true, schema: {type: integer, minimum: 1}}
+    delete:
+      summary: Remove uma transformação permitida
+      tags: [estoque]
+      responses:
+        "204": {description: Transformação removida}
+        "404": {$ref: "#/components/responses/NaoEncontrado"}
+
   /api/estoque/localizacoes:
     get:
       summary: Lista localizações (ordenadas por nome)
@@ -668,20 +712,45 @@ components:
         lote_id: {type: integer, minimum: 1}
         usuario_id: {type: integer, minimum: 1, deprecated: true, description: Campo legado ignorado; a autoria vem da sessão autenticada}
         quantidade: {type: number, minimum: 0, exclusiveMinimum: true}
-        lote_destino_id: {type: integer, minimum: 1, nullable: true, description: Compatibilidade legada para TRANSFERENCIA; obrigatório para TRANSFORMACAO; precisa ser diferente de lote_id}
-        localizacao_destino_id: {type: integer, minimum: 1, nullable: true, description: Forma preferencial de TRANSFERENCIA; o backend cria ou reutiliza um lote compatível na localização}
+        lote_destino_id: {type: integer, minimum: 1, nullable: true, description: Compatibilidade legada para TRANSFERENCIA/TRANSFORMACAO; precisa ser diferente de lote_id}
+        produto_destino_id: {type: integer, minimum: 1, nullable: true, description: Forma preferencial de TRANSFORMACAO; deve formar um par cadastrado com o produto de origem}
+        localizacao_destino_id: {type: integer, minimum: 1, nullable: true, description: Forma preferencial de TRANSFERENCIA e TRANSFORMACAO; o backend cria ou reutiliza lote compatível na localização}
         quantidade_destino: {type: number, minimum: 0, exclusiveMinimum: true, nullable: true, description: Obrigatória apenas para TRANSFORMACAO}
         motivo: {type: string, nullable: true, description: Obrigatório para SAIDA/AJUSTE_ENTRADA/AJUSTE_SAIDA/PERDA}
         observacao: {type: string, nullable: true}
     Movimentacao:
-      allOf:
-        - $ref: "#/components/schemas/MovimentacaoCriar"
-        - type: object
-          properties:
-            id: {type: integer}
-            solicitacao_producao_id: {type: integer, nullable: true}
-            sp_componente_id: {type: integer, nullable: true}
-            criado_em: {type: string, example: "2026-10-16 15:46:39"}
+      type: object
+      properties:
+        id: {type: integer}
+        tipo: {type: string}
+        lote_id: {type: integer}
+        lote_destino_id: {type: integer, nullable: true}
+        quantidade: {type: number}
+        quantidade_destino: {type: number, nullable: true}
+        motivo: {type: string, nullable: true}
+        usuario_id: {type: integer}
+        solicitacao_producao_id: {type: integer, nullable: true}
+        sp_componente_id: {type: integer, nullable: true}
+        observacao: {type: string, nullable: true}
+        perda_transformacao: {type: number, nullable: true, description: Diferença entre quantidade de origem e resultante quando positiva}
+        rendimento_percentual: {type: number, nullable: true, description: quantidade_destino / quantidade * 100}
+        criado_em: {type: string, example: "2026-10-16 15:46:39"}
+
+    TransformacaoCriar:
+      type: object
+      required: [produto_origem_id, produto_destino_id]
+      properties:
+        produto_origem_id: {type: integer, minimum: 1}
+        produto_destino_id: {type: integer, minimum: 1}
+
+    TransformacaoDisponivel:
+      type: object
+      properties:
+        produto_origem_id: {type: integer}
+        produto_destino_id: {type: integer}
+        produto_destino: {type: string}
+        unidade_medida: {type: string}
+        conservacao: {type: string, enum: [SECO, RESFRIADO, CONGELADO]}
 
     ItemInventario:
       type: object

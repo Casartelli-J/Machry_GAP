@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { api } from './api'
 import { PageHeading } from './components'
-import type { Localizacao, Lote, Produto, Usuario } from './types'
+import type { Localizacao, Lote, Produto, TransformacaoDisponivel, Usuario } from './types'
 
 type Movimento = {id:number;tipo:string;lote_id:number;lote_destino_id:number|null;quantidade:number;quantidade_destino:number|null;motivo:string|null;usuario_id:number;observacao:string|null;criado_em:string}
 const dateTime = (value:string) => new Date(value).toLocaleString('pt-BR')
@@ -48,23 +48,92 @@ export function UsersPage({current}:{current:Usuario}){
 }
 
 export function TransferPage({lotes,produtos,localizacoes,onChanged}:{lotes:Lote[];produtos:Produto[];localizacoes:Localizacao[];onChanged:()=>Promise<void>}){
- const [origin,setOrigin]=useState('');const [destination,setDestination]=useState('');const [kind,setKind]=useState<'TRANSFERENCIA'|'TRANSFORMACAO'>('TRANSFERENCIA');const [qty,setQty]=useState(1);const [destQty,setDestQty]=useState(1);const [note,setNote]=useState('');const [error,setError]=useState('');const [busy,setBusy]=useState(false)
- const source=lotes.find(l=>l.id===Number(origin));
+ const [origin,setOrigin]=useState('')
+ const [destination,setDestination]=useState('')
+ const [destinationProduct,setDestinationProduct]=useState('')
+ const [kind,setKind]=useState<'TRANSFERENCIA'|'TRANSFORMACAO'>('TRANSFERENCIA')
+ const [qty,setQty]=useState(1)
+ const [destQty,setDestQty]=useState(1)
+ const [note,setNote]=useState('')
+ const [transformacoes,setTransformacoes]=useState<TransformacaoDisponivel[]>([])
+ const [ruleOrigin,setRuleOrigin]=useState('')
+ const [ruleDestination,setRuleDestination]=useState('')
+ const [error,setError]=useState('')
+ const [busy,setBusy]=useState(false)
+ const [ruleBusy,setRuleBusy]=useState(false)
+
+ const refreshTransformacoes=async()=>setTransformacoes(await api<TransformacaoDisponivel[]>('/api/estoque/transformacoes'))
+ useEffect(()=>{void refreshTransformacoes().catch(e=>setError(errorMessage(e)))},[])
+
+ const source=lotes.find(l=>l.id===Number(origin))
  const sourceProduct=produtos.find(p=>p.id===source?.produto_id)
- const target=kind==='TRANSFORMACAO'?lotes.find(l=>l.id===Number(destination)):undefined
- const transformOptions=lotes.filter(l=>l.id!==source?.id&&l.produto_id!==source?.produto_id)
- const locationOptions=localizacoes.filter(l=>l.id!==source?.localizacao_id&&(!sourceProduct||l.tipo===sourceProduct.conservacao))
+ const targetProduct=produtos.find(p=>p.id===Number(destinationProduct))
+ const transferLocations=localizacoes.filter(l=>l.id!==source?.localizacao_id&&(!sourceProduct||l.tipo===sourceProduct.conservacao))
+ const allowedTransforms=transformacoes.filter(t=>t.produto_origem_id===source?.produto_id)
+ const transformLocations=localizacoes.filter(l=>!targetProduct||l.tipo===targetProduct.conservacao)
+ const yieldPercent=qty>0 ? (destQty/qty)*100 : 0
+ const loss=sourceProduct&&targetProduct&&sourceProduct.unidade_medida===targetProduct.unidade_medida ? Math.max(qty-destQty,0) : 0
+ const ruleSource=produtos.find(p=>p.id===Number(ruleOrigin))
+ const ruleDestinations=produtos.filter(p=>p.id!==ruleSource?.id&&(!ruleSource||p.unidade_medida===ruleSource.unidade_medida))
+
+ const resetDestination=()=>{setDestination('');setDestinationProduct('')}
  const save=async(e:FormEvent)=>{e.preventDefault();setBusy(true);setError('');try{
    if(!source)throw new Error('Selecione o lote de origem.')
-   if(!destination)throw new Error(kind==='TRANSFERENCIA'?'Selecione o local de destino.':'Selecione o lote de destino.')
-   if(kind==='TRANSFORMACAO'&&!target)throw new Error('Selecione o lote de destino.')
+   if(kind==='TRANSFERENCIA'&&!destination)throw new Error('Selecione o local de destino.')
+   if(kind==='TRANSFORMACAO'&&!destinationProduct)throw new Error('Selecione o produto resultante.')
+   if(kind==='TRANSFORMACAO'&&!destination)throw new Error('Selecione o local de destino.')
    const body=kind==='TRANSFERENCIA'
      ? {tipo:kind,lote_id:source.id,localizacao_destino_id:Number(destination),quantidade:qty,observacao:note.trim()||null}
-     : {tipo:kind,lote_id:source.id,lote_destino_id:target!.id,quantidade:qty,quantidade_destino:destQty,observacao:note.trim()||null}
-   await api('/api/estoque/movimentacoes',{method:'POST',body:JSON.stringify(body)});await onChanged();setOrigin('');setDestination('');setNote('')
+     : {tipo:kind,lote_id:source.id,produto_destino_id:Number(destinationProduct),localizacao_destino_id:Number(destination),quantidade:qty,quantidade_destino:destQty,observacao:note.trim()||null}
+   await api('/api/estoque/movimentacoes',{method:'POST',body:JSON.stringify(body)})
+   await onChanged()
+   setOrigin('');resetDestination();setNote('');setQty(1);setDestQty(1)
  }catch(e){setError(errorMessage(e))}finally{setBusy(false)}}
- const canSubmit=!!source&&!!destination&&(kind==='TRANSFERENCIA'||!!target)
- return <section className="panel"><h2>Transferir ou transformar</h2><p className="helper">Na transferência, escolha diretamente para qual localização o lote deve ir. O sistema cria ou reaproveita automaticamente um lote compatível no destino. A transformação continua convertendo um produto em outro lote.</p><form onSubmit={save} className="inline-form"><label>Operação<select value={kind} onChange={e=>{setKind(e.target.value as typeof kind);setDestination('')}}><option value="TRANSFERENCIA">Transferência</option><option value="TRANSFORMACAO">Transformação</option></select></label><label>Lote de origem<select required value={origin} onChange={e=>{setOrigin(e.target.value);setDestination('')}}><option value="">Selecione</option>{lotes.filter(l=>l.quantidade>0).map(l=><option key={l.id} value={l.id}>#{l.id} — {l.produto} ({l.quantidade} {produtos.find(p=>p.id===l.produto_id)?.unidade_medida}) · {l.localizacao}</option>)}</select></label>{kind==='TRANSFERENCIA'?<label>Local de destino<select required value={destination} onChange={e=>setDestination(e.target.value)}><option value="">Selecione</option>{locationOptions.map(l=><option key={l.id} value={l.id}>{l.nome} · {l.tipo}</option>)}</select></label>:<label>Lote de destino<select required value={destination} onChange={e=>setDestination(e.target.value)}><option value="">Selecione</option>{transformOptions.map(l=><option key={l.id} value={l.id}>#{l.id} — {l.produto} · {l.localizacao}</option>)}</select></label>}<label>Quantidade de origem<input type="number" required min="0.001" max={source?.quantidade} step="any" value={qty} onChange={e=>setQty(Number(e.target.value))}/></label>{kind==='TRANSFORMACAO'&&<label>Quantidade resultante<input type="number" required min="0.001" step="any" value={destQty} onChange={e=>setDestQty(Number(e.target.value))}/></label>}<label>Observação<input value={note} onChange={e=>setNote(e.target.value)}/></label><button className="primary" disabled={busy||!canSubmit}>Registrar {kind==='TRANSFERENCIA'?'transferência':'transformação'}</button></form>{error&&<p className="form-error">{error}</p>}<p className="helper">Transferências preservam produto, validade, data de produção e custo do lote de origem. Não é mais necessário criar previamente um lote vazio no destino.</p></section>
+
+ const createRule=async(e:FormEvent)=>{e.preventDefault();setRuleBusy(true);setError('');try{
+   if(!ruleOrigin||!ruleDestination)throw new Error('Selecione os dois produtos da transformação.')
+   await api('/api/estoque/transformacoes',{method:'POST',body:JSON.stringify({produto_origem_id:Number(ruleOrigin),produto_destino_id:Number(ruleDestination)})})
+   await refreshTransformacoes();setRuleOrigin('');setRuleDestination('')
+ }catch(e){setError(errorMessage(e))}finally{setRuleBusy(false)}}
+
+ const deleteRule=async(item:TransformacaoDisponivel)=>{setRuleBusy(true);setError('');try{
+   await api(`/api/estoque/transformacoes/${item.produto_origem_id}/${item.produto_destino_id}`,{method:'DELETE'})
+   await refreshTransformacoes()
+   if(source?.produto_id===item.produto_origem_id&&Number(destinationProduct)===item.produto_destino_id)resetDestination()
+ }catch(e){setError(errorMessage(e))}finally{setRuleBusy(false)}}
+
+ const canSubmit=!!source&&!!destination&&(kind==='TRANSFERENCIA'||!!destinationProduct)
+ return <section className="panel">
+   <h2>Transferir ou transformar</h2>
+   <p className="helper">Transferências movem o mesmo produto entre locais. Transformações convertem um produto cadastrado em outro e criam/reaproveitam automaticamente o lote resultante.</p>
+   <form onSubmit={save} className="inline-form">
+     <label>Operação<select value={kind} onChange={e=>{setKind(e.target.value as typeof kind);resetDestination()}}><option value="TRANSFERENCIA">Transferência</option><option value="TRANSFORMACAO">Transformação</option></select></label>
+     <label>Lote de origem<select required value={origin} onChange={e=>{setOrigin(e.target.value);resetDestination()}}><option value="">Selecione</option>{lotes.filter(l=>l.quantidade>0).map(l=><option key={l.id} value={l.id}>#{l.id} — {l.produto} ({l.quantidade} {produtos.find(p=>p.id===l.produto_id)?.unidade_medida}) · {l.localizacao}</option>)}</select></label>
+     {kind==='TRANSFERENCIA' ? <label>Local de destino<select required value={destination} onChange={e=>setDestination(e.target.value)}><option value="">Selecione</option>{transferLocations.map(l=><option key={l.id} value={l.id}>{l.nome} · {l.tipo}</option>)}</select></label> : <>
+       <label>Produto resultante<select required value={destinationProduct} onChange={e=>{setDestinationProduct(e.target.value);setDestination('')}}><option value="">Selecione</option>{allowedTransforms.map(t=><option key={t.produto_destino_id} value={t.produto_destino_id}>{t.produto_destino} · {t.unidade_medida}</option>)}</select></label>
+       <label>Local de destino<select required value={destination} onChange={e=>setDestination(e.target.value)}><option value="">Selecione</option>{transformLocations.map(l=><option key={l.id} value={l.id}>{l.nome} · {l.tipo}</option>)}</select></label>
+     </>}
+     <label>Quantidade de origem<input type="number" required min="0.001" max={source?.quantidade} step="any" value={qty} onChange={e=>setQty(Number(e.target.value))}/></label>
+     {kind==='TRANSFORMACAO'&&<label>Quantidade resultante<input type="number" required min="0.001" step="any" value={destQty} onChange={e=>setDestQty(Number(e.target.value))}/></label>}
+     <label>Observação<input value={note} onChange={e=>setNote(e.target.value)}/></label>
+     <button className="primary" disabled={busy||!canSubmit}>Registrar {kind==='TRANSFERENCIA'?'transferência':'transformação'}</button>
+   </form>
+   {kind==='TRANSFORMACAO'&&source&&<p className="helper">Rendimento estimado: <strong>{yieldPercent.toFixed(2)}%</strong>{loss>0&&sourceProduct ? <> · Perda de rendimento: <strong>{loss.toLocaleString('pt-BR')} {sourceProduct.unidade_medida}</strong></>:null}. O lote resultante recebe a validade padrão do produto, limitada pela validade da origem, e o custo unitário é recalculado pelo rendimento.</p>}
+   {kind==='TRANSFORMACAO'&&source&&allowedTransforms.length===0&&<p className="form-error">Não há transformação cadastrada para este produto. Cadastre uma regra abaixo.</p>}
+   {error&&<p className="form-error">{error}</p>}
+   <p className="helper">Não é necessário criar lote de destino manualmente. A rastreabilidade fica preservada no movimento e no lote resultante.</p>
+
+   <details>
+     <summary><strong>Configurar transformações permitidas</strong></summary>
+     <p className="helper">Cadastre quais produtos podem ser convertidos entre si. Enquanto não houver fator de conversão, origem e destino precisam usar a mesma unidade de medida.</p>
+     <form onSubmit={createRule} className="inline-form">
+       <label>Produto de origem<select required value={ruleOrigin} onChange={e=>{setRuleOrigin(e.target.value);setRuleDestination('')}}><option value="">Selecione</option>{produtos.map(p=><option key={p.id} value={p.id}>{p.nome} · {p.unidade_medida}</option>)}</select></label>
+       <label>Produto resultante<select required value={ruleDestination} onChange={e=>setRuleDestination(e.target.value)}><option value="">Selecione</option>{ruleDestinations.map(p=><option key={p.id} value={p.id}>{p.nome} · {p.unidade_medida}</option>)}</select></label>
+       <button className="secondary" disabled={ruleBusy||!ruleOrigin||!ruleDestination}>Cadastrar transformação</button>
+     </form>
+     <div className="table-wrap"><table><thead><tr><th>Origem</th><th>Resultado</th><th></th></tr></thead><tbody>{transformacoes.map(t=><tr key={`${t.produto_origem_id}-${t.produto_destino_id}`}><td>{produtos.find(p=>p.id===t.produto_origem_id)?.nome||`#${t.produto_origem_id}`}</td><td>{t.produto_destino}</td><td><button type="button" className="text-button" disabled={ruleBusy} onClick={()=>{void deleteRule(t)}}>Remover</button></td></tr>)}</tbody></table></div>
+   </details>
+ </section>
 }
 
 export function LotDetails({lotes,onChanged}:{lotes:Lote[];onChanged:()=>Promise<void>}){

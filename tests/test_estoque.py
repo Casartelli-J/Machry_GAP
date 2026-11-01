@@ -261,3 +261,147 @@ def test_transferencia_por_localizacao_rejeita_destino_incompativel_e_mesma_orig
     assert incompativel.status_code == 400
     assert c.get(f"/api/estoque/lotes/{origem['id']}").get_json()['quantidade'] == 10
     assert c.get('/api/estoque/lotes?produto_id=1&localizacao_id=2').get_json() == []
+
+
+def test_lista_transformacoes_disponiveis(seeded_client):
+    c = seeded_client
+    resposta = c.get('/api/estoque/transformacoes?produto_origem_id=5')
+    assert resposta.status_code == 200
+    assert resposta.get_json() == [
+        {
+            'produto_origem_id': 5,
+            'produto_destino_id': 6,
+            'produto_destino': 'Queijo ralado',
+            'unidade_medida': 'g',
+            'conservacao': 'RESFRIADO',
+        }
+    ]
+
+
+def test_transformacao_automatica_cria_e_reutiliza_lote_destino(seeded_client):
+    from datetime import date, timedelta
+
+    c = seeded_client
+    origem = c.post('/api/estoque/lotes', json={
+        'produto_id': 5,
+        'localizacao_id': 2,
+        'data_validade': '2099-01-01',
+        'custo_unitario': 0.05,
+    }).get_json()
+    c.post('/api/estoque/movimentacoes', json={
+        'tipo': 'ENTRADA', 'lote_id': origem['id'], 'quantidade': 2000,
+    })
+
+    corpo = {
+        'tipo': 'TRANSFORMACAO',
+        'lote_id': origem['id'],
+        'produto_destino_id': 6,
+        'localizacao_destino_id': 4,
+        'quantidade': 1000,
+        'quantidade_destino': 900,
+        'observacao': 'Queijo ralado para mise en place',
+    }
+    primeira = c.post('/api/estoque/movimentacoes', json=corpo)
+    assert primeira.status_code == 201, primeira.get_json()
+    mov = primeira.get_json()
+    assert mov['perda_transformacao'] == 100
+    assert mov['rendimento_percentual'] == 90
+    assert 'perda de rendimento: 100 g' in mov['observacao']
+
+    destino_id = mov['lote_destino_id']
+    destino = c.get(f'/api/estoque/lotes/{destino_id}').get_json()
+    assert destino['produto_id'] == 6
+    assert destino['localizacao_id'] == 4
+    assert destino['quantidade'] == 900
+    assert destino['data_producao'] == date.today().isoformat()
+    assert destino['data_validade'] == (date.today() + timedelta(days=7)).isoformat()
+    assert round(destino['custo_unitario'], 6) == round((0.05 * 1000) / 900, 6)
+    assert c.get(f"/api/estoque/lotes/{origem['id']}").get_json()['quantidade'] == 1000
+
+    segunda = c.post('/api/estoque/movimentacoes', json=corpo)
+    assert segunda.status_code == 201, segunda.get_json()
+    assert segunda.get_json()['lote_destino_id'] == destino_id
+    assert c.get(f'/api/estoque/lotes/{destino_id}').get_json()['quantidade'] == 1800
+    assert c.get(f"/api/estoque/lotes/{origem['id']}").get_json()['quantidade'] == 0
+
+
+def test_transformacao_automatica_rejeita_par_ou_local_invalido_sem_criar_lote(seeded_client):
+    c = seeded_client
+    origem = c.post('/api/estoque/lotes', json={
+        'produto_id': 5, 'localizacao_id': 2, 'data_validade': '2099-01-01'
+    }).get_json()
+    c.post('/api/estoque/movimentacoes', json={
+        'tipo': 'ENTRADA', 'lote_id': origem['id'], 'quantidade': 100,
+    })
+    antes = c.get('/api/estoque/lotes').get_json()
+
+    nao_cadastrada = c.post('/api/estoque/movimentacoes', json={
+        'tipo': 'TRANSFORMACAO', 'lote_id': origem['id'],
+        'produto_destino_id': 7, 'localizacao_destino_id': 2,
+        'quantidade': 10, 'quantidade_destino': 9,
+    })
+    assert nao_cadastrada.status_code == 400
+
+    local_incompativel = c.post('/api/estoque/movimentacoes', json={
+        'tipo': 'TRANSFORMACAO', 'lote_id': origem['id'],
+        'produto_destino_id': 6, 'localizacao_destino_id': 1,
+        'quantidade': 10, 'quantidade_destino': 9,
+    })
+    assert local_incompativel.status_code == 400
+
+    depois = c.get('/api/estoque/lotes').get_json()
+    assert len(depois) == len(antes)
+    assert c.get(f"/api/estoque/lotes/{origem['id']}").get_json()['quantidade'] == 100
+
+
+def test_transformacao_automatica_rejeita_lote_origem_vencido(seeded_client):
+    from datetime import date, timedelta
+
+    c = seeded_client
+    origem = c.post('/api/estoque/lotes', json={
+        'produto_id': 5,
+        'localizacao_id': 2,
+        'data_validade': (date.today() - timedelta(days=1)).isoformat(),
+    }).get_json()
+    c.post('/api/estoque/movimentacoes', json={
+        'tipo': 'ENTRADA', 'lote_id': origem['id'], 'quantidade': 100,
+    })
+
+    resposta = c.post('/api/estoque/movimentacoes', json={
+        'tipo': 'TRANSFORMACAO',
+        'lote_id': origem['id'],
+        'produto_destino_id': 6,
+        'localizacao_destino_id': 4,
+        'quantidade': 100,
+        'quantidade_destino': 90,
+    })
+    assert resposta.status_code == 409
+    assert 'vencido' in resposta.get_json()['erro']
+    assert c.get(f"/api/estoque/lotes/{origem['id']}").get_json()['quantidade'] == 100
+
+
+def test_crud_regras_transformacao(seeded_client):
+    c = seeded_client
+
+    criada = c.post('/api/estoque/transformacoes', json={
+        'produto_origem_id': 4,  # Nozes (g)
+        'produto_destino_id': 7,  # Creme de nozes (g)
+    })
+    assert criada.status_code == 201, criada.get_json()
+    assert criada.get_json()['produto_destino'] == 'Creme de nozes'
+
+    duplicada = c.post('/api/estoque/transformacoes', json={
+        'produto_origem_id': 4,
+        'produto_destino_id': 7,
+    })
+    assert duplicada.status_code == 409
+
+    unidade_incompativel = c.post('/api/estoque/transformacoes', json={
+        'produto_origem_id': 3,  # Leite (ml)
+        'produto_destino_id': 9,  # Chantili (g)
+    })
+    assert unidade_incompativel.status_code == 409
+
+    removida = c.delete('/api/estoque/transformacoes/4/7')
+    assert removida.status_code == 204
+    assert c.delete('/api/estoque/transformacoes/4/7').status_code == 404

@@ -106,6 +106,38 @@ class EstoqueRepository:
     def transformacao_cadastrada(self, produto_origem_id: int, produto_destino_id: int) -> bool:
         return db.session.get(ProdutoTransformacao, (produto_origem_id, produto_destino_id)) is not None
 
+    def listar_transformacoes(self, produto_origem_id: Optional[int] = None):
+        sql = """
+            SELECT pt.produto_origem_id, pt.produto_destino_id,
+                   p.nome AS produto_destino, p.unidade_medida, p.conservacao
+              FROM produto_transformacao pt
+              JOIN produto p ON p.id = pt.produto_destino_id
+             WHERE p.ativo = 1
+        """
+        params: dict = {}
+        if produto_origem_id is not None:
+            sql += " AND pt.produto_origem_id = :produto_origem_id"
+            params["produto_origem_id"] = produto_origem_id
+        sql += " ORDER BY p.nome, p.id"
+        return db.session.execute(text(sql), params).mappings().all()
+
+    def inserir_transformacao(self, produto_origem_id: int, produto_destino_id: int) -> ProdutoTransformacao:
+        regra = ProdutoTransformacao(
+            produto_origem_id=produto_origem_id, produto_destino_id=produto_destino_id
+        )
+        db.session.add(regra)
+        db.session.flush()
+        return regra
+
+    def remover_transformacao(self, produto_origem_id: int, produto_destino_id: int) -> bool:
+        regra = db.session.get(
+            ProdutoTransformacao, (produto_origem_id, produto_destino_id)
+        )
+        if regra is None:
+            return False
+        db.session.delete(regra)
+        return True
+
     # -- localização -----------------------------------------------------------
 
     def listar_localizacoes(self) -> list[Localizacao]:
@@ -195,6 +227,22 @@ class EstoqueRepository:
             consulta = consulta.filter(Lote.custo_unitario.is_(None))
         else:
             consulta = consulta.filter(Lote.custo_unitario == origem.custo_unitario)
+        return consulta.order_by(Lote.id).first()
+
+    def buscar_lote_transformacao_compativel(
+        self, *, produto_destino_id: int, localizacao_destino_id: int,
+        data_producao, data_validade, custo_unitario
+    ) -> Optional[Lote]:
+        consulta = db.session.query(Lote).filter(
+            Lote.produto_id == produto_destino_id,
+            Lote.localizacao_id == localizacao_destino_id,
+            Lote.data_producao == data_producao,
+            Lote.data_validade == data_validade,
+        )
+        if custo_unitario is None:
+            consulta = consulta.filter(Lote.custo_unitario.is_(None))
+        else:
+            consulta = consulta.filter(Lote.custo_unitario == custo_unitario)
         return consulta.order_by(Lote.id).first()
 
     def inserir_lote(

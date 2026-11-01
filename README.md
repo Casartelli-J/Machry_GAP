@@ -232,3 +232,8 @@ Resultado da Fase 9 no ambiente de validação: **71 testes funcionais + 3 teste
 A transferência de estoque agora recebe diretamente uma **localização de destino** no frontend. O backend cria ou reutiliza automaticamente um lote compatível, preservando produto, data de produção, validade e custo do lote de origem. O contrato antigo com `lote_destino_id` continua aceito para compatibilidade.
 
 Consulte `docs/HOTFIX_TRANSFERENCIA_LOCALIZACAO.md` para os detalhes.
+
+## Hotfix — transformação inteligente
+
+A transformação de estoque não exige mais um lote de destino criado manualmente. A interface permite escolher o produto resultante e a localização; o backend cria ou reaproveita um lote compatível, calcula validade/custo, registra rendimento e mantém compatibilidade com `lote_destino_id`. Veja `docs/HOTFIX_TRANSFORMACAO_INTELIGENTE.md`.
+

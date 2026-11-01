@@ -34,6 +34,26 @@ def movimentacoes():
     return [schemas.MovimentacaoOut.model_validate(i).model_dump() for i in itens]
 
 
+@bp.get("/transformacoes")
+def transformacoes():
+    filtro = consulta(schemas.TransformacaoQuery)
+    itens = get_service().listar_transformacoes(filtro.produto_origem_id)
+    return [schemas.TransformacaoDisponivelOut.model_validate(i).model_dump() for i in itens]
+
+
+@bp.post("/transformacoes")
+def criar_transformacao():
+    dados = entrada(schemas.TransformacaoCreate)
+    item = get_service().criar_transformacao(dados)
+    return schemas.TransformacaoDisponivelOut.model_validate(item).model_dump(), 201
+
+
+@bp.delete("/transformacoes/<int:produto_origem_id>/<int:produto_destino_id>")
+def remover_transformacao(produto_origem_id, produto_destino_id):
+    get_service().remover_transformacao(produto_origem_id, produto_destino_id)
+    return {}, 204
+
+
 @bp.get("/localizacoes")
 def listar_localizacoes():
     itens = get_service().listar_localizacoes()

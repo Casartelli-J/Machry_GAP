@@ -40,13 +40,28 @@ class EstoqueService:
             origem = self._obter_lote_ou_falhar(dados.lote_id, para_atualizacao=True)
             self._validar_usuario_ativo(usuario_id)
             self._validar_saldo_suficiente(origem, dados)
+            if dados.tipo == "TRANSFORMACAO" and origem.data_validade:
+                if date.fromisoformat(str(origem.data_validade)) < date.today():
+                    raise Conflito("não é permitido transformar um lote vencido")
             destino = None
+            observacao = dados.observacao
+
             if dados.tipo == "TRANSFERENCIA" and dados.localizacao_destino_id is not None:
                 destino = self._obter_ou_criar_destino_transferencia(
                     origem, dados.localizacao_destino_id
                 )
+            elif (
+                dados.tipo == "TRANSFORMACAO"
+                and dados.produto_destino_id is not None
+                and dados.localizacao_destino_id is not None
+            ):
+                destino = self._obter_ou_criar_destino_transformacao(origem, dados)
+                observacao = self._observacao_transformacao(origem, dados)
             elif dados.lote_destino_id is not None:
                 destino = self._validar_lote_destino(origem, dados)
+                if dados.tipo == "TRANSFORMACAO":
+                    observacao = self._observacao_transformacao(origem, dados, destino)
+
             return self.repository.inserir_movimentacao(
                 tipo=dados.tipo,
                 lote_origem=origem,
@@ -55,8 +70,36 @@ class EstoqueService:
                 quantidade_destino=dados.quantidade_destino,
                 motivo=dados.motivo,
                 usuario_id=usuario_id,
-                observacao=dados.observacao,
+                observacao=observacao,
             )
+
+    def listar_transformacoes(self, produto_origem_id: Optional[int] = None):
+        return self.repository.listar_transformacoes(produto_origem_id)
+
+    def criar_transformacao(self, dados: schemas.TransformacaoCreate):
+        with self.repository.transacao():
+            origem = self.repository.obter_produto_ativo(dados.produto_origem_id)
+            destino = self.repository.obter_produto_ativo(dados.produto_destino_id)
+            if origem is None or destino is None:
+                raise RegistroNaoEncontrado("produto de origem ou destino não encontrado/inativo")
+            if origem.unidade_medida != destino.unidade_medida:
+                raise Conflito(
+                    "transformação exige produtos com a mesma unidade de medida enquanto não houver fator de conversão cadastrado"
+                )
+            if self.repository.transformacao_cadastrada(origem.id, destino.id):
+                raise Conflito("transformação já cadastrada entre os produtos")
+            self.repository.inserir_transformacao(origem.id, destino.id)
+            for item in self.repository.listar_transformacoes(origem.id):
+                if item["produto_destino_id"] == destino.id:
+                    return item
+            raise RuntimeError("transformação criada, mas não pôde ser recarregada")
+
+    def remover_transformacao(self, produto_origem_id: int, produto_destino_id: int) -> None:
+        with self.repository.transacao():
+            if not self.repository.remover_transformacao(
+                produto_origem_id, produto_destino_id
+            ):
+                raise RegistroNaoEncontrado("transformação não encontrada")
 
     def sugestao_saida(self, produto_id: int, quantidade: float) -> models.SugestaoSaida:
         if self.repository.obter_produto_ativo(produto_id) is None:
@@ -282,6 +325,110 @@ class EstoqueService:
             custo_unitario=origem.custo_unitario,
         )
 
+    def _obter_ou_criar_destino_transformacao(
+        self, origem, dados: schemas.MovimentacaoCreate
+    ):
+        produto_origem = self.repository.obter_produto(origem.produto_id)
+        produto_destino = self.repository.obter_produto_ativo(dados.produto_destino_id)
+        if produto_origem is None:
+            raise RegistroNaoEncontrado("produto do lote de origem não encontrado")
+        if produto_destino is None:
+            raise RegistroNaoEncontrado("produto de destino não encontrado ou inativo")
+        if not self.repository.transformacao_cadastrada(
+            origem.produto_id, produto_destino.id
+        ):
+            raise ValueError("transformação não cadastrada entre os produtos")
+
+        # O modelo atual não guarda fator de conversão entre unidades. Sem isso,
+        # rendimento/perda só é semanticamente correto quando as unidades coincidem.
+        if produto_origem.unidade_medida != produto_destino.unidade_medida:
+            raise Conflito(
+                "transformação automática exige produtos com a mesma unidade de medida"
+            )
+
+        local_destino = self.repository.obter_localizacao(dados.localizacao_destino_id)
+        if local_destino is None:
+            raise RegistroNaoEncontrado("localização de destino não encontrada")
+        self._validar_conservacao_compativel(produto_destino, local_destino)
+
+        hoje = date.today()
+        validade_origem = (
+            date.fromisoformat(str(origem.data_validade))
+            if origem.data_validade
+            else None
+        )
+
+        validade = None
+        if produto_destino.validade_padrao_dias is not None:
+            validade = hoje + timedelta(days=int(produto_destino.validade_padrao_dias))
+        elif produto_destino.validade_obrigatoria:
+            raise Conflito(
+                "produto transformado exige validade, mas não possui validade_padrao_dias"
+            )
+
+        # Regra conservadora: a transformação não prolonga automaticamente a
+        # validade além do lote de origem sem uma regra tecnológica explícita.
+        if validade_origem is not None and (validade is None or validade_origem < validade):
+            validade = validade_origem
+
+        custo_destino = None
+        if origem.custo_unitario is not None:
+            custo_total = Decimal(str(origem.custo_unitario)) * Decimal(str(dados.quantidade))
+            custo_destino = float(
+                (custo_total / Decimal(str(dados.quantidade_destino))).quantize(
+                    Decimal("0.000001")
+                )
+            )
+
+        data_producao = hoje.isoformat()
+        data_validade = validade.isoformat() if validade else None
+        destino = self.repository.buscar_lote_transformacao_compativel(
+            produto_destino_id=produto_destino.id,
+            localizacao_destino_id=local_destino.id,
+            data_producao=data_producao,
+            data_validade=data_validade,
+            custo_unitario=custo_destino,
+        )
+        if destino is not None:
+            return destino
+
+        return self.repository.inserir_lote(
+            produto_id=produto_destino.id,
+            localizacao_id=local_destino.id,
+            data_producao=data_producao,
+            data_validade=data_validade,
+            custo_unitario=custo_destino,
+        )
+
+    def _observacao_transformacao(
+        self, origem, dados: schemas.MovimentacaoCreate, destino=None
+    ) -> str:
+        produto_origem = self.repository.obter_produto(origem.produto_id)
+        produto_destino = (
+            self.repository.obter_produto(destino.produto_id)
+            if destino is not None
+            else self.repository.obter_produto(dados.produto_destino_id)
+        )
+        unidade = produto_origem.unidade_medida if produto_origem is not None else "un"
+        rendimento = (Decimal(str(dados.quantidade_destino)) / Decimal(str(dados.quantidade))) * 100
+        perda = max(
+            Decimal(str(dados.quantidade)) - Decimal(str(dados.quantidade_destino)),
+            Decimal("0"),
+        )
+
+        resumo = f"Rendimento da transformação: {float(rendimento):.2f}%"
+        if (
+            perda > 0
+            and produto_origem is not None
+            and produto_destino is not None
+            and produto_origem.unidade_medida == produto_destino.unidade_medida
+        ):
+            resumo += f"; perda de rendimento: {float(perda):g} {unidade}"
+
+        if dados.observacao and dados.observacao.strip():
+            return f"{dados.observacao.strip()} | {resumo}"
+        return resumo
+
     def _validar_lote_destino(self, origem, dados: schemas.MovimentacaoCreate):
         destino = self._obter_lote_ou_falhar(dados.lote_destino_id, para_atualizacao=True)
         local_destino = self.repository.obter_localizacao(destino.localizacao_id)
@@ -294,10 +441,19 @@ class EstoqueService:
             raise ValueError("lote destino com conservação incompatível")
         if dados.tipo == "TRANSFERENCIA" and origem.produto_id != destino.produto_id:
             raise ValueError("transferência requer mesmo produto")
-        if dados.tipo == "TRANSFORMACAO" and not self.repository.transformacao_cadastrada(
-            origem.produto_id, destino.produto_id
-        ):
-            raise ValueError("transformação não cadastrada entre os produtos")
+        if dados.tipo == "TRANSFORMACAO":
+            if not self.repository.transformacao_cadastrada(
+                origem.produto_id, destino.produto_id
+            ):
+                raise ValueError("transformação não cadastrada entre os produtos")
+            produto_origem = self.repository.obter_produto(origem.produto_id)
+            if (
+                produto_origem is None
+                or produto_origem.unidade_medida != produto_destino.unidade_medida
+            ):
+                raise Conflito(
+                    "transformação exige produtos com a mesma unidade de medida enquanto não houver fator de conversão cadastrado"
+                )
         return destino
 
     def listar_localizacoes(self) -> list[models.Localizacao]:

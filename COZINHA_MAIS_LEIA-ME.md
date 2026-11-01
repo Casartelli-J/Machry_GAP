@@ -63,3 +63,8 @@ O frontend de Produção agora cobre o fluxo planejado nas fases anteriores: pla
 Antes dos testes E2E, o sistema recebeu troca obrigatória da senha temporária, troca da própria senha pela interface, bloqueio temporário de login após falhas repetidas, auditoria persistida e validação de configuração de produção. Movimentações de estoque agora usam a identidade da sessão para autoria; `usuario_id` enviado pelo cliente é legado e ignorado.
 
 Em produção, configure `APP_ENV=production`, PostgreSQL, `SESSION_COOKIE_SECURE=1`, uma `SECRET_KEY` aleatória com 32+ caracteres e senhas bootstrap não padronizadas. A aplicação se recusa a iniciar com configuração insegura. Consulte `docs/FASE8_09_HARDENING.md`.
+
+## Hotfix — transformação inteligente
+
+A transformação de estoque não exige mais um lote de destino criado manualmente. A interface permite escolher o produto resultante e a localização; o backend cria ou reaproveita um lote compatível, calcula validade/custo, registra rendimento e mantém compatibilidade com `lote_destino_id`. Veja `docs/HOTFIX_TRANSFORMACAO_INTELIGENTE.md`.
+
