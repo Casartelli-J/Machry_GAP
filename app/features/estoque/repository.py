@@ -125,6 +125,22 @@ class EstoqueRepository:
         for campo, valor in campos.items():
             setattr(localizacao, campo, valor)
 
+    def localizacao_tem_filhas(self, loc_id: int) -> bool:
+        return (
+            db.session.query(Localizacao.id)
+            .filter(Localizacao.parent_id == loc_id)
+            .first()
+            is not None
+        )
+
+    def localizacao_tem_lotes(self, loc_id: int) -> bool:
+        return (
+            db.session.query(Lote.id)
+            .filter(Lote.localizacao_id == loc_id)
+            .first()
+            is not None
+        )
+
     def remover_localizacao(self, loc_id: int) -> bool:
         localizacao = db.session.get(Localizacao, loc_id)
         if localizacao is None:

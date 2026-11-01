@@ -300,8 +300,19 @@ class EstoqueService:
 
     def remover_localizacao(self, loc_id: int) -> None:
         with self.repository.transacao():
-            if not self.repository.remover_localizacao(loc_id):
-                raise RegistroNaoEncontrado("localização não encontrada")
+            self._obter_localizacao_ou_falhar(loc_id)
+
+            if self.repository.localizacao_tem_filhas(loc_id):
+                raise Conflito(
+                    "localização possui sub-localizações; mova ou remova as localizações filhas antes de excluí-la"
+                )
+
+            if self.repository.localizacao_tem_lotes(loc_id):
+                raise Conflito(
+                    "localização possui lotes vinculados; mova os lotes antes de excluí-la"
+                )
+
+            self.repository.remover_localizacao(loc_id)
 
     def _obter_localizacao_ou_falhar(self, loc_id: int):
         localizacao = self.repository.obter_localizacao(loc_id)

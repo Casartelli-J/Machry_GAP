@@ -131,6 +131,30 @@ def test_localizacao_validacoes(client):
                        json={'campo_invalido': 1}).status_code == 400  # campo não editável
 
 
+def test_nao_remove_localizacao_com_dependencias(seeded_client):
+    c = seeded_client
+
+    # "Cozinha" (id=5) é pai de "Geladeira da Cozinha" (id=6) no seed.
+    resposta = c.delete('/api/estoque/localizacoes/5')
+    assert resposta.status_code == 409
+    assert 'sub-localizações' in resposta.get_json()['erro']
+
+    # Mesmo sem filhos, uma localização com lote também não pode desaparecer.
+    local = c.post(
+        '/api/estoque/localizacoes',
+        json={'nome': 'Depósito com lote', 'tipo': 'SECO'},
+    ).get_json()
+    lote = c.post(
+        '/api/estoque/lotes',
+        json={'produto_id': 1, 'localizacao_id': local['id']},
+    )
+    assert lote.status_code == 201
+
+    resposta = c.delete(f"/api/estoque/localizacoes/{local['id']}")
+    assert resposta.status_code == 409
+    assert 'lotes vinculados' in resposta.get_json()['erro']
+
+
 def test_lotes_listagem_e_detalhe(seeded_client):
     c = seeded_client
     lote1 = c.post('/api/estoque/lotes', json={'produto_id': 1, 'localizacao_id': 1}).get_json()['id']
